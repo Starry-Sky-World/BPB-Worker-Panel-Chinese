@@ -1,4 +1,5 @@
 <h1 align="center">💦 BPB Panel</h1>
+> BPB Panel 中文版
 
 ### 🌏 Readme in [Farsi](README_fa.md) [简体中文](README_zh.md)
 
