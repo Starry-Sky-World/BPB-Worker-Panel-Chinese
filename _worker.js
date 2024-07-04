@@ -2575,6 +2575,8 @@ const renderLoginPage = async () => {
             background-color: #f9f9f9;
             position: relative;
             overflow: hidden;
+            background:url('http://www.98qy.com/sjbz/api.php');
+            background-size: cover;
         }
         .container {
             position: absolute;
@@ -2630,17 +2632,18 @@ const renderLoginPage = async () => {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel 中文版 <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <h1>BPB Panel 中文版 💦</h1>
+            <span style="font-size: smaller;">${panelVersion}</span> 
             <h2>今天又是涩涩的一天~</h2>
             <div class="form-container">
-                <h2>User Login</h2>
+                <h2>管理员登录</h2>
                 <form id="loginForm">
                     <div class="form-control">
-                        <label for="password">Password</label>
+                        <label for="password">密码</label>
                         <input type="password" id="password" name="password" required>
                     </div>
                     <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
-                    <button type="submit" class="button">Login</button>
+                    <button type="submit" class="button">登录</button>
                 </form>
             </div>
         </div>
@@ -2694,6 +2697,8 @@ const renderErrorPage = (message, error, refer) => {
                 justify-content: center;
                 align-items: center;
                 font-family: system-ui;
+                background:url('http://www.98qy.com/sjbz/api.php');
+                background-size: cover;
             }
             h1 { font-size: 2.5rem; text-align: center; color: #09639f; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
             #error-container { text-align: center; }
