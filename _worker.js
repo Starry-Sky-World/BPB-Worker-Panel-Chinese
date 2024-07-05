@@ -7,7 +7,7 @@ import { connect } from 'cloudflare:sockets';
 
 // How to generate your own UUID:
 // https://www.uuidgenerator.net/
-let userID = '89b3cbba-e6ac-485a-9481-976a0415eab9';
+let userID = '7634f265-30d5-4ffc-9fc3-3f62d7ddfdfe';
 
 // https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/
 // https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/
@@ -2098,10 +2098,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="openQR('https://${hostName}/sub/${userID}#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/sub/${userID}#VPN-Normal', '订阅二维码 - QR Code')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#VPN-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -2118,7 +2118,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#VPN-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
 						</td>
@@ -2131,10 +2131,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#VPN-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#VPN-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -2168,10 +2168,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#BPB Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#VPN Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB Fragment', true)">
+                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#VPN Fragment', true)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -2205,10 +2205,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="openQR('https://${hostName}/warpsub/${userID}#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/warpsub/${userID}#VPN-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}#BPB-Warp', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}#VPN-Warp', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -2225,10 +2225,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=singbox#VPN-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=singbox#VPN-Warp', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
 						</td>
@@ -2259,7 +2259,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             <input type="password" id="confirmPassword" name="confirmPassword" required>
                         </div>
                         <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
-                        <button id="changePasswordBtn" type="submit" class="button">Change Password</button>
+                        <button id="changePasswordBtn" type="submit" class="button">重置密码</button>
                     </form>
                 </div>
             </div>
@@ -2389,6 +2389,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 			textarea.select();
 			document.execCommand('copy');
 			document.body.removeChild(textarea);
+            navigator.clipboard.writeText(value);
 			alert('📋 复制到剪切板：\\n\\n' +  value);
 		}
 
