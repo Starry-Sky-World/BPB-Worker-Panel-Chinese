@@ -1,8 +1,8 @@
 <h1 align="center">💦 BPB Panel</h1>
-> BPB Panel 中文版
+BPB Panel 中文版
 
 ### 🌏 Readme in [Farsi](README_fa.md) [简体中文](README_zh.md)
-
+![BPB-Worker-Panel-Chinese](https://socialify.git.ci/Starry-Sky-World/BPB-Worker-Panel-Chinese/image?description=1&descriptionEditable=BPB%20Worker%20Panel%20Chinese%20version%2C%20currently%20some%20VPN%20nodes%20with%20BPB%20prefix%20have%20been%20replaced%20with%20VPN%20prefix%20prompts.%20Please%20Star!&font=Jost&forks=1&issues=1&language=1&logo=https%3A%2F%2Favatars.githubusercontent.com%2Fu%2F155004885%3Fv%3D4&name=1&owner=1&pulls=1&stargazers=1&theme=Auto)
 <p align="center">
   <img src="docs/assets/images/Panel.jpg">
 </p>
