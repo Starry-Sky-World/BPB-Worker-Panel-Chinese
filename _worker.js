@@ -20,7 +20,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '普通版本：2.4.3 中文语言版本：1.2.4';
+let panelVersion = '2.4.3_zh_1.4.2';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
