@@ -20,7 +20,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '2.4.3_zh';
+let panelVersion = '普通版本：2.4.3 中文语言版本：1.2.4';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -823,18 +823,18 @@ const generateRemark = (index, port) => {
     switch (index) {
         case 0:
         case 1:
-            remark = `💦 BPB - Domain_${index + 1} : ${port}`;
+            remark = `VPN - 域名_${index + 1} : ${port}`;
             break;
         case 2:
         case 3:
-            remark = `💦 BPB - IPv4_${index - 1} : ${port}`;
+            remark = `VPN - IPv4_${index - 1} : ${port}`;
             break;
         case 4:
         case 5:
-            remark = `💦 BPB - IPv6_${index - 3} : ${port}`;
+            remark = `VPN - IPv6_${index - 3} : ${port}`;
             break;
         default:
-            remark = `💦 BPB - Clean IP_${index - 5} : ${port}`;
+            remark = `VPN - Clean IP_${index - 5} : ${port}`;
             break;
     }
 
@@ -2063,7 +2063,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 				</div>
 			</form>
             <hr>            
-			<h2>NORMAL CONFIGS · 正常配置 🔗</h2>
+			<h2>NORMAL CONFIGS · 获取订阅配置 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
 					<tr>
@@ -2389,7 +2389,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 			textarea.select();
 			document.execCommand('copy');
 			document.body.removeChild(textarea);
-			alert('📋 Copied to clipboard:\\n\\n' +  value);
+			alert('📋 复制到剪切板：\\n\\n' +  value);
 		}
 
         const applySettings = async (event, configForm) => {
@@ -2466,16 +2466,16 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 applyButton.value = applyButtonVal;
 
                 if (response.ok) {
-                    alert('Parameters applied successfully 😎');
+                    alert('OK啊，朋友 😎');
                     window.location.reload(true);
                 } else {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
-                    alert('⚠️ Session expired! Please login again.');
+                    alert('⚠️ 哦!好像出了点错误.你的会话好像有问题，刷新再试，或者登录？');
                     window.location.href = '/login';
                 }           
             } catch (error) {
-                console.error('Error:', error);
+                console.error('报错:', error);
             }
         }
 
@@ -2534,13 +2534,13 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 if (response.ok) {
                     modal.style.display = "none";
                     document.body.style.overflow = "";
-                    alert("Password changed successfully! 👍");
+                    alert("哦~你成功的重置了密码!少看涩涩的东西~ 👍");
                     window.location.href = '/login';
                 } else if (response.status === 401) {
                     const errorMessage = await response.text();
                     passwordError.textContent = '⚠️ ' + errorMessage;
                     console.error(errorMessage, response.status);
-                    alert('⚠️ Session expired! Please login again.');
+                    alert('⚠️ 哦嘛噶！你的会话过期啦！重新登录或许能解决哦~');
                     window.location.href = '/login';
                 } else {
                     const errorMessage = await response.text();
@@ -2549,7 +2549,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     return false;
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('哦~报错了:', error);
             }
         }
 	</script>
@@ -2562,11 +2562,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 const renderLoginPage = async () => {
     const html = `
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="zh">
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login</title>
+    <title>面板登录 awa</title>
     <style>
 
         html, body { height: 100%; margin: 0; }
@@ -2575,6 +2575,8 @@ const renderLoginPage = async () => {
             background-color: #f9f9f9;
             position: relative;
             overflow: hidden;
+            background:url('http://www.98qy.com/sjbz/api.php');
+            background-size: cover;
         }
         .container {
             position: absolute;
@@ -2630,16 +2632,18 @@ const renderLoginPage = async () => {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <h1>BPB Panel 中文版 💦</h1>
+            <span style="font-size: smaller;">${panelVersion}</span> 
+            <h2>今天又是涩涩的一天~</h2>
             <div class="form-container">
-                <h2>User Login</h2>
+                <h2>管理员登录</h2>
                 <form id="loginForm">
                     <div class="form-control">
-                        <label for="password">Password</label>
+                        <label for="password">密码</label>
                         <input type="password" id="password" name="password" required>
                     </div>
                     <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
-                    <button type="submit" class="button">Login</button>
+                    <button type="submit" class="button">登录</button>
                 </form>
             </div>
         </div>
@@ -2693,6 +2697,8 @@ const renderErrorPage = (message, error, refer) => {
                 justify-content: center;
                 align-items: center;
                 font-family: system-ui;
+                background:url('http://www.98qy.com/sjbz/api.php');
+                background-size: cover;
             }
             h1 { font-size: 2.5rem; text-align: center; color: #09639f; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
             #error-container { text-align: center; }
@@ -2701,10 +2707,11 @@ const renderErrorPage = (message, error, refer) => {
 
     <body>
         <div id="error-container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <h1>BPB Panel 中文版 <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            
             <div id="error-message">
                 <h2>${message} ${refer 
-                    ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' 
+                    ? '哦豁~请重新试试？或者看看<a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">文档</a>？' 
                     : ''}
                 </h2>
                 <p><b>${error ? `⚠️ ${error}` : ''}</b></p>
