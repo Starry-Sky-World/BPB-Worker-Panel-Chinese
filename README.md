@@ -67,6 +67,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 ### Special Thanks
 - CF-vless code author [3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)
 - CF preferred IP program author [badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest), [XIU2](https://github.com/XIU2/CloudflareSpeedTest)
+- [ BPB Worker Panel ](https://github.com / bage-pain-bache/BPB-Worker-Panel)Official Edition
 
 ---
 
