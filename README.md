@@ -5,11 +5,6 @@ BPB Panel 中文版
 
 ![image](https://github.com/user-attachments/assets/5805676e-a826-40a0-849a-9b1996a66030)
 ![image](https://github.com/user-attachments/assets/cb0b02ae-f058-4173-b778-f1c97d209266)
-
-
-<p align="center">
-  <img src="docs/assets/images/Panel.jpg">
-</p>
 <br>
 
 ## Introduction
