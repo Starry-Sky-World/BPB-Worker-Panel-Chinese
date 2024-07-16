@@ -1,10 +1,8 @@
 <h1 align=“center”>💦 BPB面板</h1>
 
 ### 🌏 [波斯语](README_fa.md) [English](README.md)
-![BPB-Worker-Panel-Chinese](https://socialify.git.ci/Starry-Sky-World/BPB-Worker-Panel-Chinese/image?description=1&descriptionEditable=BPB-Worker-Panel%E6%B1%89%E5%8C%96%E7%89%88%EF%BC%8C%E7%9B%AE%E5%89%8D%E9%83%A8%E5%88%86%E5%B8%A6%E6%9C%89BPB%E5%BC%80%E5%A4%B4%E7%9A%84vpn%E8%8A%82%E7%82%B9%E6%8F%90%E7%A4%BA%E5%9D%87%E5%B7%B2%E6%8D%A2%E6%88%90VPN%E5%BC%80%E5%A4%B4%E3%80%82%E6%B1%82Star!&font=Jost&forks=1&issues=1&language=1&logo=https%3A%2F%2Favatars.githubusercontent.com%2Fu%2F155004885%3Fv%3D4&name=1&owner=1&pulls=1&stargazers=1&theme=Auto)
-<p align="center">
-  <img src="docs/assets/images/Panel.jpg">
-</p>
+![image](https://github.com/user-attachments/assets/5805676e-a826-40a0-849a-9b1996a66030)
+![image](https://github.com/user-attachments/assets/cb0b02ae-f058-4173-b778-f1c97d209266)
 <br>
 
 介绍
