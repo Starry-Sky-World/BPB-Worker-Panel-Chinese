@@ -9,6 +9,7 @@
 该项目致力于为开发用户面板[Cloudflare workers/pages代理脚本](https://github.com/yonggekkk/Cloudflare-workers-pages-vless)由[yong gekkk](https://github.com/yonggekkk)创建. 该面板提供了两个部署选项：
 - **Cloudflare Worker**部署
 - **Pages**部署
+- 中文部署请看[StarryFun Docs](https://starry-sky-world.github.io/project/BPB-Panel)
 <br>
 
 
