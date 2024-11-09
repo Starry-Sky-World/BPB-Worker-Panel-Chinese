@@ -4118,7 +4118,7 @@ var worker_default = {
                 const client = searchParams.get("app");
                 const { kvNotFound, proxySettings: settings, warpConfigs } = await getDataset(env);
                 if (kvNotFound) {
-                    const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
+                    const errorPage = renderErrorPage("KV数据库尚未设置", null, true);
                     return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
                 }
                 switch (url.pathname) {
@@ -4260,9 +4260,10 @@ var worker_default = {
                                 "Referrer-Policy": "strict-origin-when-cross-origin"
                             }
                         });
+                    // 2
                     case "/login":
                         if (typeof env.bpb !== "object") {
-                            const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
+                            const errorPage = renderErrorPage("KV数据库未设置", null, true);
                             return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
                         }
                         const loginAuth = await Authenticate(request, env);
@@ -4993,7 +4994,7 @@ async function updateDataset(env, newSettings, resetSettings) {
             return false;
         return fieldValue;
     };
-    const remoteDNS = validateField("remoteDNS") ?? currentSettings?.remoteDNS ?? "https://8.8.8.8/dns-query";
+    const remoteDNS = validateField("remoteDNS") ?? currentSettings?.remoteDNS ?? "https://dns.18bit.cn/dns-query";
     const url = new URL(remoteDNS);
     const remoteDNSServer = url.hostname;
     const isServerDomain = isDomain(remoteDNSServer);
@@ -5189,1769 +5190,976 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
     });
     const html = `
     <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB 中文版 ${panelVersion}</title> <!-- 网页标题 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- 引入 Font Awesome 样式表 -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" /> <!-- 引入 Material Symbols 样式表 -->
-    <title>可折叠的部分</title> <!-- 二次标题 -->
-    <style>
-        :root {
-            --color: black; /* 文字颜色 */
-            --primary-color: #09639f; /* 主颜色 */
-            --secondary-color: #3498db; /* 次颜色 */
-            --header-color: #09639f;  /* 标题颜色 */
-            --background-color: #fff; /* 背景颜色 */
-            --form-background-color: #f9f9f9; /* 表单背景颜色 */
-            --table-active-color: #f2f2f2; /* 表格激活颜色 */
-            --hr-text-color: #3b3b3b; /* 横线文字颜色 */
-            --lable-text-color: #333; /* 标签文字颜色 */
-            --border-color: #ddd; /* 边框颜色 */
-            --button-color: #09639f; /* 按钮颜色 */
-            --input-background-color: white; /* 输入背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* 标题阴影 */
-        }
-        body { font-family: system-ui; background-color: var(--background-color); color: var(--color) } /* 主体样式 */
-        body.dark-mode { /* 暗黑模式样式 */
-            --color: white; /* 文字颜色 */
-            --primary-color: #09639F; /* 主颜色 */
-            --secondary-color: #3498DB; /* 次颜色 */
-            --header-color: #3498DB; /* 标题颜色 */
-            --background-color: #121212; /* 背景颜色 */
-            --form-background-color: #121212; /* 表单背景颜色 */
-            --table-active-color: #252525; /* 表格激活颜色 */
-            --hr-text-color: #D5D5D5; /* 横线文字颜色 */
-            --lable-text-color: #DFDFDF; /* 标签文字颜色 */
-            --border-color: #353535; /* 边框颜色 */
-            --button-color: #3498DB; /* 按钮颜色 */
-            --input-background-color: #252525; /* 输入背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25); /* 标题阴影 */
-        }
-        .material-symbols-outlined { /* 材料符号样式 */
-            margin-left: 5px;
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
-        }
-        details { border-bottom: 1px solid var(--border-color); } /* 详情边框样式 */
-        summary { /* 摘要样式 */
-            font-weight: bold; /* 粗体 */
-            cursor: pointer; /* 指针样式 */
-            text-align: center; /* 文本居中 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        summary::marker { font-size: 1.5rem; color: var(--secondary-color); } /* 摘要标记样式 */
-        summary h2 { display: inline-flex; } /* 摘要标题样式 */
-        h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); } /* 一级标题样式 */
-        h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); } /* 二级标题样式 */
-        hr { border: 1px solid var(--border-color); margin: 20px 0; } /* 水平线样式 */
-        .footer { /* 页脚样式 */
-            display: flex; /* 灵活布局 */
-            font-weight: 600; /* 字体强度 */
-            margin: 10px auto 0 auto; /* 外边距 */
-            justify-content: center; /* 水平方向居中 */
-            align-items: center; /* 垂直方向居中 */
-        }
-        .footer button {margin: 0 20px; background: #212121; max-width: fit-content;} /* 页脚按钮样式 */
-        .footer button:hover, .footer button:focus { background: #3b3b3b;} /* 鼠标悬停及聚焦时按钮样式 */
-        .form-control a, a.link { text-decoration: none; } /* 链接样式 */
-        .form-control { /* 表单控制样式 */
-            margin-bottom: 20px; /* 下外边距 */
-            font-family: Arial, sans-serif; /* 字体 */
-            display: flex; /* 灵活布局 */
-            flex-direction: column; /* 纵向布局 */
-        }
-        .form-control button { /* 按钮样式 */
-            background-color: var(--form-background-color); /* 背景色 */
-            font-size: 1.1rem; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--button-color); /* 字体颜色 */
-            border-color: var(--primary-color); /* 边框颜色 */
-            border: 1px solid; /* 边框宽度 */
-        }
-        #apply {display: block; margin-top: 20px;} /* 应用按钮样式 */
-        input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;} /* 输入按钮样式 */
-        label { /* 标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 5px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="url"],
-        textarea,
-        select { /* 输入框、文本域、选择框样式 */
-            width: 100%; /* 宽度100% */
-            text-align: center; /* 文本居中 */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }	
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="url"]:focus,
-        textarea:focus,
-        select:focus { border-color: var(--secondary-color); outline: none; } /* 输入框聚焦样式 */
-        .button,
-        table button { /* 按钮样式 */
-            display: flex; /* 灵活布局 */
-            align-items: center; /* 垂直居中 */
-            justify-content: center; /* 水平居中 */
-            width: 100%; /* 宽度100% */
-            white-space: nowrap; /* 不换行 */
-            padding: 10px 15px; /* 内边距 */
-            font-size: 16px; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            letter-spacing: 1px; /* 字符间距 */
-            border: none; /* 无边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            color: white; /* 字体颜色 */
-            background-color: var(--primary-color); /* 背景颜色 */
-            cursor: pointer; /* 光标为指针 */
-            outline: none; /* 无轮廓 */
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: all 0.3s ease; /* 过渡效果 */
-        }
-        input[type="checkbox"] { 
-            background-color: var(--input-background-color); /* 输入框背景颜色 */
-            style="margin: 0; grid-column: 2;" /* CSS样式 */
-        }
-        table button { margin: auto; width: auto; } /* 表格内按钮样式 */
-        .button.disabled { /* 禁用按钮样式 */
-            background-color: #ccc; /* 背景颜色 */
-            cursor: not-allowed; /* 禁用光标 */
-            box-shadow: none; /* 无阴影效果 */
-            pointer-events: none; /* 无指针事件 */
-        }
-        .button:hover,
-        table button:hover,
-        table button:focus { /* 鼠标悬停及聚焦时的样式 */
-            background-color: #2980b9; /* 背景颜色 */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* 阴影效果 */
-            transform: translateY(-2px); /* 垂直偏移 */
-        }
-        button.button:hover { color: white; } /* 鼠标悬停时按钮字体颜色 */
-        .button:active,
-        table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); } /* 按钮按下时效果 */
-        .form-container { /* 表单容器样式 */
-            max-width: 90%; /* 最大宽度90% */
-            margin: 0 auto; /* 垂直居中 */
-            padding: 20px; /* 内边距 */
-            background: var(--form-background-color); /* 背景颜色 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            margin-bottom: 100px; /* 下外边距 */
-        }
-        .table-container { margin-top: 20px; overflow-x: auto; } /* 表格容器样式 */
-        table { 
-            width: 100%; /* 宽度100% */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-collapse: separate; /* 边框分离 */
-            border-spacing: 0; /* 边框间距为0 */
-            border-radius: 10px; /* 边角圆滑 */
-            margin-bottom: 20px; /* 下外边距 */
-            overflow: hidden; /* 隐藏溢出部分 */
-        }
-        th, td { padding: 10px; border-bottom: 1px solid var(--border-color); } /* 单元格样式 */
-        td div { display: flex; align-items: center; } /* 单元格内元素样式 */
-        th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;} /* 表头样式 */
-        td:last-child { background-color: var(--table-active-color); } /* 最后一列单元格 */
-        tr:hover { background-color: var(--table-active-color); } /* 行悬停样式 */
-        .modal { /* 模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .modal-content { /* 模态框内容样式 */
-            background-color: var(--form-background-color); /* 背景颜色 */
-            margin: auto; /* 边距自动处理 */
-            padding: 10px 20px 20px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            width: 80%; /* 宽度80% */
-            position: absolute; /* 绝对定位 */
-            top: 50%; /* 上边距50% */
-            left: 50%; /* 左边距50% */
-            transform: translate(-50%, -50%); /* 居中显示 */
-        }
-        .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; } /* 关闭按钮样式 */
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; } /* 鼠标悬停及聚焦时关闭按钮样式 */
-        .form-control label { /* 表单标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 8px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            line-height: 1.3em; /* 行高 */
-        }
-        .form-control input[type="password"] { /* 密码输入框样式 */
-            width: 100%; /* 宽度100% */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            margin-bottom: 15px; /* 下外边距 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }
-        .routing { /* 路由样式 */
-            display: grid; /* 网格布局 */
-            justify-content: flex-start; /* 左对齐 */
-            grid-template-columns: 1fr 1fr 10fr 1fr; /* 网格列模板 */
-            margin-bottom: 15px; /* 下外边距 */
-        }
-        .form-control .routing input { grid-column: 2 / 3; } /* 路由输入框列样式 */
-        #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; } /* 路由规则表单样式 */
-        .routing label { /* 路由标签样式 */
-            text-align: left; /* 左对齐 */
-            margin: 0 0 0 10px; /* 边距 */
-            font-weight: 400; /* 字体强度 */
-            font-size: 100%; /* 字体大小 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; } /* 密码框聚焦样式 */
-        #passwordError { color: red; margin-bottom: 10px; } /* 密码错误提示样式 */
-        .symbol { margin-right: 8px; } /* 符号样式 */
-        .modalQR { /* 二维码模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .floating-button { /* 漂浮按钮样式 */
-            position: fixed; /* 固定定位 */
-            bottom: 20px; /* 下边距 */
-            left: 20px; /* 左边距 */
-            background-color: var(--color); /* 背景颜色 */
-            color: white; /* 字体颜色 */
-            border: none; /* 无边框 */
-            border-radius: 50%; /* 圆形边框 */
-            width: 60px; /* 宽度 */
-            height: 60px; /* 高度 */
-            font-size: 24px; /* 字体大小 */
-            cursor: pointer; /* 光标样式 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: background-color 0.3s, transform 0.3s; /* 背景颜色和变换的过渡效果 */
-        }
-        .floating-button:hover { transform: scale(1.1); } /* 鼠标悬停时扩大效果 */
-        .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; } /* 最小最大范围样式 */
-        .min-max span { text-align: center; white-space: pre; } /* 最小最大范围文本样式 */
-        .input-with-select { width: 100%; } /* 输入与选择的组合样式 */
-        body.dark-mode .floating-button { background-color: var(--color); } /* 暗黑模式下的漂浮按钮背景颜色 */
-        body.dark-mode .floating-button:hover { transform: scale(1.1); } /* 暗黑模式下悬停的漂浮按钮效果 */
-        @media only screen and (min-width: 768px) { /* 屏幕宽度768px以上的样式 */
-            .form-container { max-width: 70%; } /* 表单容器最大宽度 */
-            .form-control { /* 表单控制样式 */
-                margin-bottom: 15px; /* 下外边距 */
-                display: grid; /* 网格布局 */
-                grid-template-columns: 1fr 1fr; /* 网格列模板 */
-                align-items: baseline; /* 基线对齐 */
-                justify-content: flex-end; /* 右对齐 */
-                font-family: Arial, sans-serif; /* 字体 */
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BPB 中国版 ${panelVersion}</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <title>Collapsible Sections</title>
+        <style>
+            :root {
+                --color: black;
+                --primary-color: #09639f;
+                --secondary-color: #3498db;
+                --header-color: #09639f; 
+                --background-color: #fff;
+                --form-background-color: #f9f9f9;
+                --table-active-color: #f2f2f2;
+                --hr-text-color: #3b3b3b;
+                --lable-text-color: #333;
+                --border-color: #ddd;
+                --button-color: #09639f;
+                --input-background-color: white;
+                --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
             }
-            #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; } /* 应用按钮样式 */
-            .modal-content { width: 30% } /* 模态框内容样式 */
-            .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; } /* 路由样式 */
-        }
-    </style>
-</head>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB 中文版 ${panelVersion}</title> <!-- 网页标题 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- 引入 Font Awesome 样式 -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" /> <!-- 引入 Material Symbols 样式 -->
-    <title>可折叠部分</title> <!-- 可折叠部分标题 -->
-    <style>
-        :root {
-            --color: black; /* 文字颜色 */
-            --primary-color: #09639f; /* 主颜色 */
-            --secondary-color: #3498db; /* 次颜色 */
-            --header-color: #09639f;  /* 标题颜色 */
-            --background-color: #fff; /* 背景颜色 */
-            --form-background-color: #f9f9f9; /* 表单背景颜色 */
-            --table-active-color: #f2f2f2; /* 表格激活颜色 */
-            --hr-text-color: #3b3b3b; /* 横线文字颜色 */
-            --lable-text-color: #333; /* 标签文字颜色 */
-            --border-color: #ddd; /* 边框颜色 */
-            --button-color: #09639f; /* 按钮颜色 */
-            --input-background-color: white; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* 标题阴影 */
-        }
-        body { font-family: system-ui; background-color: var(--background-color); color: var(--color) } /* 主体样式 */
-        body.dark-mode { /* 暗黑模式样式 */
-            --color: white; /* 文字颜色 */
-            --primary-color: #09639F; /* 主颜色 */
-            --secondary-color: #3498DB; /* 次颜色 */
-            --header-color: #3498DB; /* 标题颜色 */
-            --background-color: #121212; /* 背景颜色 */
-            --form-background-color: #121212; /* 表单背景颜色 */
-            --table-active-color: #252525; /* 表格激活颜色 */
-            --hr-text-color: #D5D5D5; /* 横线文字颜色 */
-            --lable-text-color: #DFDFDF; /* 标签文字颜色 */
-            --border-color: #353535; /* 边框颜色 */
-            --button-color: #3498DB; /* 按钮颜色 */
-            --input-background-color: #252525; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25); /* 标题阴影 */
-        }
-        .material-symbols-outlined { /* 材料符号样式 */
-            margin-left: 5px;
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
-        }
-        details { border-bottom: 1px solid var(--border-color); } /* 详情框边框样式 */
-        summary { /* 摘要样式 */
-            font-weight: bold; /* 字体加粗 */
-            cursor: pointer; /* 鼠标指针 */
-            text-align: center; /* 文本居中 */
-            text-wrap: nowrap; /* 文本不换行 */
-        }
-        summary::marker { font-size: 1.5rem; color: var(--secondary-color); } /* 摘要标记样式 */
-        summary h2 { display: inline-flex; } /* 摘要标题样式 */
-        h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); } /* 主要标题样式 */
-        h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); } /* 次要标题样式 */
-        hr { border: 1px solid var(--border-color); margin: 20px 0; } /* 水平线样式 */
-        .footer { /* 页脚样式 */
-            display: flex; /* 灵活布局 */
-            font-weight: 600; /* 字体加粗 */
-            margin: 10px auto 0 auto; /* 外边距 */
-            justify-content: center; /* 水平居中 */
-            align-items: center; /* 垂直居中 */
-        }
-        .footer button {margin: 0 20px; background: #212121; max-width: fit-content;} /* 页脚按钮样式 */
-        .footer button:hover, .footer button:focus { background: #3b3b3b;} /* 鼠标悬停或聚焦时的按钮样式 */
-        .form-control a, a.link { text-decoration: none; } /* 移除链接下划线 */
-        .form-control { /* 表单控制样式 */
-            margin-bottom: 20px; /* 下外边距 */
-            font-family: Arial, sans-serif; /* 字体设置 */
-            display: flex; /* 灵活布局 */
-            flex-direction: column; /* 纵向布局 */
-        }
-        .form-control button { /* 按钮样式 */
-            background-color: var(--form-background-color); /* 背景颜色 */
-            font-size: 1.1rem; /* 字体大小 */
-            font-weight: 600; /* 字体加粗 */
-            color: var(--button-color); /* 字体颜色 */
-            border-color: var(--primary-color); /* 边框颜色 */
-            border: 1px solid; /* 边框宽度 */
-        }
-        #apply {display: block; margin-top: 20px;} /* 应用按钮样式 */
-        input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;} /* 输入按钮样式 */
-        label { /* 标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 5px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体加粗 */
-            color: var(--lable-text-color); /* 字体颜色 */
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="url"],
-        textarea,
-        select { /* 输入框、文本域、选择框样式 */
-            width: 100%; /* 宽度100% */
-            text-align: center; /* 文本居中 */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }	
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="url"]:focus,
-        textarea:focus,
-        select:focus { border-color: var(--secondary-color); outline: none; } /* 输入框聚焦样式 */
-        .button,
-        table button { /* 按钮样式 */
-            display: flex; /* 灵活布局 */
-            align-items: center; /* 垂直居中 */
-            justify-content: center; /* 水平居中 */
-            width: 100%; /* 宽度100% */
-            white-space: nowrap; /* 不换行 */
-            padding: 10px 15px; /* 内边距 */
-            font-size: 16px; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            letter-spacing: 1px; /* 字符间距 */
-            border: none; /* 无边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            color: white; /* 字体颜色 */
-            background-color: var(--primary-color); /* 背景颜色 */
-            cursor: pointer; /* 光标样式 */
-            outline: none; /* 无轮廓 */
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: all 0.3s ease; /* 过渡效果 */
-        }
-        input[type="checkbox"] { 
-            background-color: var(--input-background-color); /* 输入框背景颜色 */
-            style="margin: 0; grid-column: 2;" /* CSS样式 */
-        }
-        table button { margin: auto; width: auto; } /* 表格内按钮样式 */
-        .button.disabled { /* 禁用按钮样式 */
-            background-color: #ccc; /* 背景颜色 */
-            cursor: not-allowed; /* 禁用光标 */
-            box-shadow: none; /* 无阴影效果 */
-            pointer-events: none; /* 禁用指针事件 */
-        }
-        .button:hover,
-        table button:hover,
-        table button:focus { /* 鼠标悬停及聚焦时的样式 */
-            background-color: #2980b9; /* 背景颜色 */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* 阴影效果 */
-            transform: translateY(-2px); /* 垂直向上偏移 */
-        }
-        button.button:hover { color: white; } /* 鼠标悬停时按钮字体颜色 */
-        .button:active,
-        table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); } /* 按钮按下时效果 */
-        .form-container { /* 表单容器样式 */
-            max-width: 90%; /* 最大宽度90% */
-            margin: 0 auto; /* 垂直居中 */
-            padding: 20px; /* 内边距 */
-            background: var(--form-background-color); /* 背景颜色 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            margin-bottom: 100px; /* 下外边距 */
-        }
-        .table-container { margin-top: 20px; overflow-x: auto; } /* 表格容器样式 */
-        table { 
-            width: 100%; /* 宽度100% */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-collapse: separate; /* 边框分离 */
-            border-spacing: 0; /* 边框间距为0 */
-            border-radius: 10px; /* 边角圆滑 */
-            margin-bottom: 20px; /* 下外边距 */
-            overflow: hidden; /* 隐藏溢出部分 */
-        }
-        th, td { padding: 10px; border-bottom: 1px solid var(--border-color); } /* 单元格样式 */
-        td div { display: flex; align-items: center; } /* 单元格内元素样式 */
-        th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;} /* 表头样式 */
-        td:last-child { background-color: var(--table-active-color); } /* 最后一列单元格 */
-        tr:hover { background-color: var(--table-active-color); } /* 行悬停样式 */
-        .modal { /* 模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .modal-content { /* 模态框内容样式 */
-            background-color: var(--form-background-color); /* 背景颜色 */
-            margin: auto; /* 边距自动处理 */
-            padding: 10px 20px 20px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            width: 80%; /* 宽度80% */
-            position: absolute; /* 绝对定位 */
-            top: 50%; /* 上边距50% */
-            left: 50%; /* 左边距50% */
-            transform: translate(-50%, -50%); /* 居中显示 */
-        }
-        .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; } /* 关闭按钮样式 */
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; } /* 鼠标悬停及聚焦时关闭按钮样式 */
-        .form-control label { /* 表单标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 8px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            line-height: 1.3em; /* 行高 */
-        }
-        .form-control input[type="password"] { /* 密码输入框样式 */
-            width: 100%; /* 宽度100% */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            margin-bottom: 15px; /* 下外边距 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }
-        .routing { /* 路由样式 */
-            display: grid; /* 网格布局 */
-            justify-content: flex-start; /* 左对齐 */
-            grid-template-columns: 1fr 1fr 10fr 1fr; /* 网格列模板 */
-            margin-bottom: 15px; /* 下外边距 */
-        }
-        .form-control .routing input { grid-column: 2 / 3; } /* 路由输入框列样式 */
-        #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; } /* 路由规则表单样式 */
-        .routing label { /* 路由标签样式 */
-            text-align: left; /* 左对齐 */
-            margin: 0 0 0 10px; /* 边距 */
-            font-weight: 400; /* 字体强度 */
-            font-size: 100%; /* 字体大小 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; } /* 密码框聚焦样式 */
-        #passwordError { color: red; margin-bottom: 10px; } /* 密码错误提示样式 */
-        .symbol { margin-right: 8px; } /* 符号样式 */
-        .modalQR { /* 二维码模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .floating-button { /* 漂浮按钮样式 */
-            position: fixed; /* 固定定位 */
-            bottom: 20px; /* 下边距 */
-            left: 20px; /* 左边距 */
-            background-color: var(--color); /* 背景颜色 */
-            color: white; /* 字体颜色 */
-            border: none; /* 无边框 */
-            border-radius: 50%; /* 圆形边框 */
-            width: 60px; /* 宽度 */
-            height: 60px; /* 高度 */
-            font-size: 24px; /* 字体大小 */
-            cursor: pointer; /* 光标样式 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: background-color 0.3s, transform 0.3s; /* 背景颜色和变换的过渡效果 */
-        }
-        .floating-button:hover { transform: scale(1.1); } /* 鼠标悬停时扩大效果 */
-        .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; } /* 最小最大范围样式 */
-        .min-max span { text-align: center; white-space: pre; } /* 最小最大范围文本样式 */
-        .input-with-select { width: 100%; } /* 输入与选择的组合样式 */
-        body.dark-mode .floating-button { background-color: var(--color); } /* 暗黑模式下的漂浮按钮背景颜色 */
-        body.dark-mode .floating-button:hover { transform: scale(1.1); } /* 暗黑模式下悬停的漂浮按钮效果 */
-        @media only screen and (min-width: 768px) { /* 屏幕宽度768px以上的样式 */
-            .form-container { max-width: 70%; } /* 表单容器最大宽度 */
-            .form-control { /* 表单控制样式 */
-                margin-bottom: 15px; /* 下外边距 */
-                display: grid; /* 网格布局 */
-                grid-template-columns: 1fr 1fr; /* 网格列模板 */
-                align-items: baseline; /* 基线对齐 */
-                justify-content: flex-end; /* 右对齐 */
-                font-family: Arial, sans-serif; /* 字体 */
+            body { font-family: system-ui; background-color: var(--background-color); color: var(--color) }
+            body.dark-mode {
+                --color: white;
+                --primary-color: #09639F;
+                --secondary-color: #3498DB;
+                --header-color: #3498DB; 
+                --background-color: #121212;
+                --form-background-color: #121212;
+                --table-active-color: #252525;
+                --hr-text-color: #D5D5D5;
+                --lable-text-color: #DFDFDF;
+                --border-color: #353535;
+                --button-color: #3498DB;
+                --input-background-color: #252525;
+                --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
             }
-            #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; } /* 应用按钮样式 */
-            .modal-content { width: 30% } /* 模态框内容样式 */
-            .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; } /* 路由样式 */
-        }
-    </style>
-</head>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB 中文版 ${panelVersion}</title> <!-- 网页标题 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- 引入 Font Awesome 样式 -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" /> <!-- 引入 Material Symbols 样式 -->
-    <title>可折叠部分</title> <!-- 可折叠部分标题 -->
-    <style>
-        :root {
-            --color: black; /* 文字颜色 */
-            --primary-color: #09639f; /* 主颜色 */
-            --secondary-color: #3498db; /* 次颜色 */
-            --header-color: #09639f;  /* 标题颜色 */
-            --background-color: #fff; /* 背景颜色 */
-            --form-background-color: #f9f9f9; /* 表单背景颜色 */
-            --table-active-color: #f2f2f2; /* 表格激活颜色 */
-            --hr-text-color: #3b3b3b; /* 横线文字颜色 */
-            --lable-text-color: #333; /* 标签文字颜色 */
-            --border-color: #ddd; /* 边框颜色 */
-            --button-color: #09639f; /* 按钮颜色 */
-            --input-background-color: white; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* 标题阴影 */
-        }
-        body { font-family: system-ui; background-color: var(--background-color); color: var(--color) } /* 主体样式 */
-        body.dark-mode { /* 暗黑模式样式 */
-            --color: white; /* 文字颜色 */
-            --primary-color: #09639F; /* 主颜色 */
-            --secondary-color: #3498DB; /* 次颜色 */
-            --header-color: #3498DB; /* 标题颜色 */
-            --background-color: #121212; /* 背景颜色 */
-            --form-background-color: #121212; /* 表单背景颜色 */
-            --table-active-color: #252525; /* 表格激活颜色 */
-            --hr-text-color: #D5D5D5; /* 横线文字颜色 */
-            --lable-text-color: #DFDFDF; /* 标签文字颜色 */
-            --border-color: #353535; /* 边框颜色 */
-            --button-color: #3498DB; /* 按钮颜色 */
-            --input-background-color: #252525; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25); /* 标题阴影 */
-        }
-        .material-symbols-outlined { /* 材料符号样式 */
-            margin-left: 5px;
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
-        }
-        details { border-bottom: 1px solid var(--border-color); } /* 详情框边框样式 */
-        summary { /* 摘要样式 */
-            font-weight: bold; /* 粗体 */
-            cursor: pointer; /* 指针样式 */
-            text-align: center; /* 文本居中 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        summary::marker { font-size: 1.5rem; color: var(--secondary-color); } /* 摘要标记样式 */
-        summary h2 { display: inline-flex; } /* 摘要标题样式 */
-        h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); } /* 一级标题样式 */
-        h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); } /* 二级标题样式 */
-        hr { border: 1px solid var(--border-color); margin: 20px 0; } /* 水平线样式 */
-        .footer { /* 页脚样式 */
-            display: flex; /* 灵活布局 */
-            font-weight: 600; /* 字体强度 */
-            margin: 10px auto 0 auto; /* 外边距 */
-            justify-content: center; /* 水平居中 */
-            align-items: center; /* 垂直居中 */
-        }
-        .footer button {margin: 0 20px; background: #212121; max-width: fit-content;} /* 页脚按钮样式 */
-        .footer button:hover, .footer button:focus { background: #3b3b3b;} /* 鼠标悬停及聚焦时按钮样式 */
-        .form-control a, a.link { text-decoration: none; } /* 链接样式 */
-        .form-control { /* 表单控制样式 */
-            margin-bottom: 20px; /* 下外边距 */
-            font-family: Arial, sans-serif; /* 字体 */
-            display: flex; /* 灵活布局 */
-            flex-direction: column; /* 纵向布局 */
-        }
-        .form-control button { /* 按钮样式 */
-            background-color: var(--form-background-color); /* 背景色 */
-            font-size: 1.1rem; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--button-color); /* 字体颜色 */
-            border-color: var(--primary-color); /* 边框颜色 */
-            border: 1px solid; /* 边框宽度 */
-        }
-        #apply {display: block; margin-top: 20px;} /* 应用按钮样式 */
-        input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;} /* 输入按钮样式 */
-        label { /* 标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 5px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="url"],
-        textarea,
-        select { /* 输入框、文本域、选择框样式 */
-            width: 100%; /* 宽度100% */
-            text-align: center; /* 文本居中 */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }	
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="url"]:focus,
-        textarea:focus,
-        select:focus { border-color: var(--secondary-color); outline: none; } /* 输入框聚焦样式 */
-        .button,
-        table button { /* 按钮样式 */
-            display: flex; /* 灵活布局 */
-            align-items: center; /* 垂直居中 */
-            justify-content: center; /* 水平居中 */
-            width: 100%; /* 宽度100% */
-            white-space: nowrap; /* 不换行 */
-            padding: 10px 15px; /* 内边距 */
-            font-size: 16px; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            letter-spacing: 1px; /* 字符间距 */
-            border: none; /* 无边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            color: white; /* 字体颜色 */
-            background-color: var(--primary-color); /* 背景颜色 */
-            cursor: pointer; /* 光标样式 */
-            outline: none; /* 无轮廓 */
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: all 0.3s ease; /* 过渡效果 */
-        }
-        input[type="checkbox"] { 
-            background-color: var(--input-background-color); /* 输入框背景颜色 */
-            style="margin: 0; grid-column: 2;" /* CSS样式 */
-        }
-        table button { margin: auto; width: auto; } /* 表格内按钮样式 */
-        .button.disabled { /* 禁用按钮样式 */
-            background-color: #ccc; /* 背景颜色 */
-            cursor: not-allowed; /* 禁用光标 */
-            box-shadow: none; /* 无阴影效果 */
-            pointer-events: none; /* 禁用指针事件 */
-        }
-        .button:hover,
-        table button:hover,
-        table button:focus { /* 鼠标悬停及聚焦时的样式 */
-            background-color: #2980b9; /* 背景颜色 */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* 阴影效果 */
-            transform: translateY(-2px); /* 垂直向上偏移 */
-        }
-        button.button:hover { color: white; } /* 鼠标悬停时按钮字体颜色 */
-        .button:active,
-        table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); } /* 按钮按下时效果 */
-        .form-container { /* 表单容器样式 */
-            max-width: 90%; /* 最大宽度90% */
-            margin: 0 auto; /* 垂直居中 */
-            padding: 20px; /* 内边距 */
-            background: var(--form-background-color); /* 背景颜色 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            margin-bottom: 100px; /* 下外边距 */
-        }
-        .table-container { margin-top: 20px; overflow-x: auto; } /* 表格容器样式 */
-        table { 
-            width: 100%; /* 宽度100% */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-collapse: separate; /* 边框分离 */
-            border-spacing: 0; /* 边框间距为0 */
-            border-radius: 10px; /* 边角圆滑 */
-            margin-bottom: 20px; /* 下外边距 */
-            overflow: hidden; /* 隐藏溢出部分 */
-        }
-        th, td { padding: 10px; border-bottom: 1px solid var(--border-color); } /* 单元格样式 */
-        td div { display: flex; align-items: center; } /* 单元格内元素样式 */
-        th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;} /* 表头样式 */
-        td:last-child { background-color: var(--table-active-color); } /* 最后一列单元格 */
-        tr:hover { background-color: var(--table-active-color); } /* 行悬停样式 */
-        .modal { /* 模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .modal-content { /* 模态框内容样式 */
-            background-color: var(--form-background-color); /* 背景颜色 */
-            margin: auto; /* 边距自动处理 */
-            padding: 10px 20px 20px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            width: 80%; /* 宽度80% */
-            position: absolute; /* 绝对定位 */
-            top: 50%; /* 上边距50% */
-            left: 50%; /* 左边距50% */
-            transform: translate(-50%, -50%); /* 居中显示 */
-        }
-        .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; } /* 关闭按钮样式 */
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; } /* 鼠标悬停及聚焦时关闭按钮样式 */
-        .form-control label { /* 表单标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 8px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            line-height: 1.3em; /* 行高 */
-        }
-        .form-control input[type="password"] { /* 密码输入框样式 */
-            width: 100%; /* 宽度100% */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            margin-bottom: 15px; /* 下外边距 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }
-        .routing { /* 路由样式 */
-            display: grid; /* 网格布局 */
-            justify-content: flex-start; /* 左对齐 */
-            grid-template-columns: 1fr 1fr 10fr 1fr; /* 网格列模板 */
-            margin-bottom: 15px; /* 下外边距 */
-        }
-        .form-control .routing input { grid-column: 2 / 3; } /* 路由输入框列样式 */
-        #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; } /* 路由规则表单样式 */
-        .routing label { /* 路由标签样式 */
-            text-align: left; /* 左对齐 */
-            margin: 0 0 0 10px; /* 边距 */
-            font-weight: 400; /* 字体强度 */
-            font-size: 100%; /* 字体大小 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; } /* 密码框聚焦样式 */
-        #passwordError { color: red; margin-bottom: 10px; } /* 密码错误提示样式 */
-        .symbol { margin-right: 8px; } /* 符号样式 */
-        .modalQR { /* 二维码模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .floating-button { /* 漂浮按钮样式 */
-            position: fixed; /* 固定定位 */
-            bottom: 20px; /* 下边距 */
-            left: 20px; /* 左边距 */
-            background-color: var(--color); /* 背景颜色 */
-            color: white; /* 字体颜色 */
-            border: none; /* 无边框 */
-            border-radius: 50%; /* 圆形边框 */
-            width: 60px; /* 宽度 */
-            height: 60px; /* 高度 */
-            font-size: 24px; /* 字体大小 */
-            cursor: pointer; /* 光标样式 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: background-color 0.3s, transform 0.3s; /* 背景颜色和变换的过渡效果 */
-        }
-        .floating-button:hover { transform: scale(1.1); } /* 鼠标悬停时扩大效果 */
-        .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; } /* 最小最大范围样式 */
-        .min-max span { text-align: center; white-space: pre; } /* 最小最大范围文本样式 */
-        .input-with-select { width: 100%; } /* 输入与选择的组合样式 */
-        body.dark-mode .floating-button { background-color: var(--color); } /* 暗黑模式下的漂浮按钮背景颜色 */
-        body.dark-mode .floating-button:hover { transform: scale(1.1); } /* 暗黑模式下悬停的漂浮按钮效果 */
-        @media only screen and (min-width: 768px) { /* 屏幕宽度768px以上的样式 */
-            .form-container { max-width: 70%; } /* 表单容器最大宽度 */
-            .form-control { /* 表单控制样式 */
-                margin-bottom: 15px; /* 下外边距 */
-                display: grid; /* 网格布局 */
-                grid-template-columns: 1fr 1fr; /* 网格列模板 */
-                align-items: baseline; /* 基线对齐 */
-                justify-content: flex-end; /* 右对齐 */
-                font-family: Arial, sans-serif; /* 字体 */
+            .material-symbols-outlined {
+                margin-left: 5px;
+                font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
             }
-            #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; } /* 应用按钮样式 */
-            .modal-content { width: 30% } /* 模态框内容样式 */
-            .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; } /* 路由样式 */
-        }
-    </style>
-</head>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB 中文版 ${panelVersion}</title> <!-- 网页标题 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- 引入 Font Awesome 样式 -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" /> <!-- 引入 Material Symbols 样式 -->
-    <title>可折叠部分</title> <!-- 可折叠部分标题 -->
-    <style>
-        :root {
-            --color: black; /* 文字颜色 */
-            --primary-color: #09639f; /* 主色 */
-            --secondary-color: #3498db; /* 次色 */
-            --header-color: #09639f;  /* 标题颜色 */
-            --background-color: #fff; /* 背景颜色 */
-            --form-background-color: #f9f9f9; /* 表单背景颜色 */
-            --table-active-color: #f2f2f2; /* 表格激活颜色 */
-            --hr-text-color: #3b3b3b; /* 横线文字颜色 */
-            --lable-text-color: #333; /* 标签文字颜色 */
-            --border-color: #ddd; /* 边框颜色 */
-            --button-color: #09639f; /* 按钮颜色 */
-            --input-background-color: white; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* 标题阴影 */
-        }
-        body { font-family: system-ui; background-color: var(--background-color); color: var(--color) } /* 主体样式 */
-        body.dark-mode { /* 暗黑模式样式 */
-            --color: white; /* 文字颜色 */
-            --primary-color: #09639F; /* 主色 */
-            --secondary-color: #3498DB; /* 次色 */
-            --header-color: #3498DB; /* 标题颜色 */
-            --background-color: #121212; /* 背景颜色 */
-            --form-background-color: #121212; /* 表单背景颜色 */
-            --table-active-color: #252525; /* 表格激活颜色 */
-            --hr-text-color: #D5D5D5; /* 横线文字颜色 */
-            --lable-text-color: #DFDFDF; /* 标签文字颜色 */
-            --border-color: #353535; /* 边框颜色 */
-            --button-color: #3498DB; /* 按钮颜色 */
-            --input-background-color: #252525; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25); /* 标题阴影 */
-        }
-        .material-symbols-outlined { /* 材料符号样式 */
-            margin-left: 5px;
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
-        }
-        details { border-bottom: 1px solid var(--border-color); } /* 详情边框样式 */
-        summary { /* 摘要样式 */
-            font-weight: bold; /* 加粗 */
-            cursor: pointer; /* 鼠标指针 */
-            text-align: center; /* 文本居中 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        summary::marker { font-size: 1.5rem; color: var(--secondary-color); } /* 摘要标记样式 */
-        summary h2 { display: inline-flex; } /* 摘要标题样式 */
-        h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); } /* 一级标题样式 */
-        h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); } /* 二级标题样式 */
-        hr { border: 1px solid var(--border-color); margin: 20px 0; } /* 水平线样式 */
-        .footer { /* 页脚样式 */
-            display: flex; /* 灵活布局 */
-            font-weight: 600; /* 字体加粗 */
-            margin: 10px auto 0 auto; /* 外边距 */
-            justify-content: center; /* 水平居中 */
-            align-items: center; /* 垂直居中 */
-        }
-        .footer button {margin: 0 20px; background: #212121; max-width: fit-content;} /* 页脚按钮样式 */
-        .footer button:hover, .footer button:focus { background: #3b3b3b;} /* 鼠标悬停和聚焦时按钮样式 */
-        .form-control a, a.link { text-decoration: none; } /* 链接样式 */
-        .form-control { /* 表单控制样式 */
-            margin-bottom: 20px; /* 下外边距 */
-            font-family: Arial, sans-serif; /* 字体 */
-            display: flex; /* 灵活布局 */
-            flex-direction: column; /* 纵向布局 */
-        }
-        .form-control button { /* 按钮样式 */
-            background-color: var(--form-background-color); /* 背景色 */
-            font-size: 1.1rem; /* 字体大小 */
-            font-weight: 600; /* 字体加粗 */
-            color: var(--button-color); /* 字体颜色 */
-            border-color: var(--primary-color); /* 边框颜色 */
-            border: 1px solid; /* 边框宽度 */
-        }
-        #apply {display: block; margin-top: 20px;} /* 应用按钮样式 */
-        input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;} /* 输入按钮样式 */
-        label { /* 标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 5px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体加粗 */
-            color: var(--lable-text-color); /* 字体颜色 */
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="url"],
-        textarea,
-        select { /* 输入框、文本域、选择框样式 */
-            width: 100%; /* 宽度100% */
-            text-align: center; /* 文本居中 */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }	
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="url"]:focus,
-        textarea:focus,
-        select:focus { border-color: var(--secondary-color); outline: none; } /* 输入框聚焦样式 */
-        .button,
-        table button { /* 按钮样式 */
-            display: flex; /* 灵活布局 */
-            align-items: center; /* 垂直居中 */
-            justify-content: center; /* 水平居中 */
-            width: 100%; /* 宽度100% */
-            white-space: nowrap; /* 不换行 */
-            padding: 10px 15px; /* 内边距 */
-            font-size: 16px; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            letter-spacing: 1px; /* 字符间距 */
-            border: none; /* 无边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            color: white; /* 字体颜色 */
-            background-color: var(--primary-color); /* 背景颜色 */
-            cursor: pointer; /* 光标样式 */
-            outline: none; /* 无轮廓 */
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: all 0.3s ease; /* 过渡效果 */
-        }
-        input[type="checkbox"] { 
-            background-color: var(--input-background-color); /* 输入框背景颜色 */
-            style="margin: 0; grid-column: 2;" /* CSS样式 */
-        }
-        table button { margin: auto; width: auto; } /* 表格内按钮样式 */
-        .button.disabled { /* 禁用按钮样式 */
-            background-color: #ccc; /* 背景颜色 */
-            cursor: not-allowed; /* 禁用光标 */
-            box-shadow: none; /* 无阴影效果 */
-            pointer-events: none; /* 禁用指针事件 */
-        }
-        .button:hover,
-        table button:hover,
-        table button:focus { /* 鼠标悬停和聚焦时的样式 */
-            background-color: #2980b9; /* 背景颜色 */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* 阴影效果 */
-            transform: translateY(-2px); /* 垂直向上偏移 */
-        }
-        button.button:hover { color: white; } /* 鼠标悬停时按钮字体颜色 */
-        .button:active,
-        table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); } /* 按钮按下时效果 */
-        .form-container { /* 表单容器样式 */
-            max-width: 90%; /* 最大宽度90% */
-            margin: 0 auto; /* 垂直居中 */
-            padding: 20px; /* 内边距 */
-            background: var(--form-background-color); /* 背景颜色 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            margin-bottom: 100px; /* 下外边距 */
-        }
-        .table-container { margin-top: 20px; overflow-x: auto; } /* 表格容器样式 */
-        table { 
-            width: 100%; /* 宽度100% */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-collapse: separate; /* 边框分离 */
-            border-spacing: 0; /* 边框间距为0 */
-            border-radius: 10px; /* 边角圆滑 */
-            margin-bottom: 20px; /* 下外边距 */
-            overflow: hidden; /* 隐藏溢出部分 */
-        }
-        th, td { padding: 10px; border-bottom: 1px solid var(--border-color); } /* 单元格样式 */
-        td div { display: flex; align-items: center; } /* 单元格内元素样式 */
-        th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;} /* 表头样式 */
-        td:last-child { background-color: var(--table-active-color); } /* 最后一列单元格 */
-        tr:hover { background-color: var(--table-active-color); } /* 行悬停样式 */
-        .modal { /* 模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .modal-content { /* 模态框内容样式 */
-            background-color: var(--form-background-color); /* 背景颜色 */
-            margin: auto; /* 边距自动处理 */
-            padding: 10px 20px 20px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            width: 80%; /* 宽度80% */
-            position: absolute; /* 绝对定位 */
-            top: 50%; /* 上边距50% */
-            left: 50%; /* 左边距50% */
-            transform: translate(-50%, -50%); /* 居中显示 */
-        }
-        .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; } /* 关闭按钮样式 */
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; } /* 鼠标悬停及聚焦时关闭按钮样式 */
-        .form-control label { /* 表单标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 8px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            line-height: 1.3em; /* 行高 */
-        }
-        .form-control input[type="password"] { /* 密码输入框样式 */
-            width: 100%; /* 宽度100% */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            margin-bottom: 15px; /* 下外边距 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }
-        .routing { /* 路由样式 */
-            display: grid; /* 网格布局 */
-            justify-content: flex-start; /* 左对齐 */
-            grid-template-columns: 1fr 1fr 10fr 1fr; /* 网格列模板 */
-            margin-bottom: 15px; /* 下外边距 */
-        }
-        .form-control .routing input { grid-column: 2 / 3; } /* 路由输入框列样式 */
-        #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; } /* 路由规则表单样式 */
-        .routing label { /* 路由标签样式 */
-            text-align: left; /* 左对齐 */
-            margin: 0 0 0 10px; /* 边距 */
-            font-weight: 400; /* 字体强度 */
-            font-size: 100%; /* 字体大小 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; } /* 密码框聚焦样式 */
-        #passwordError { color: red; margin-bottom: 10px; } /* 密码错误提示样式 */
-        .symbol { margin-right: 8px; } /* 符号样式 */
-        .modalQR { /* 二维码模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .floating-button { /* 漂浮按钮样式 */
-            position: fixed; /* 固定定位 */
-            bottom: 20px; /* 下边距 */
-            left: 20px; /* 左边距 */
-            background-color: var(--color); /* 背景颜色 */
-            color: white; /* 字体颜色 */
-            border: none; /* 无边框 */
-            border-radius: 50%; /* 圆形边框 */
-            width: 60px; /* 宽度 */
-            height: 60px; /* 高度 */
-            font-size: 24px; /* 字体大小 */
-            cursor: pointer; /* 光标样式 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: background-color 0.3s, transform 0.3s; /* 背景颜色和变化的过渡效果 */
-        }
-        .floating-button:hover { transform: scale(1.1); } /* 鼠标悬停时放大效果 */
-        .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; } /* 最小最大范围样式 */
-        .min-max span { text-align: center; white-space: pre; } /* 最小最大范围文本样式 */
-        .input-with-select { width: 100%; } /* 输入与选择的组合样式 */
-        body.dark-mode .floating-button { background-color: var(--color); } /* 暗黑模式下漂浮按钮背景颜色 */
-        body.dark-mode .floating-button:hover { transform: scale(1.1); } /* 暗黑模式下悬停的漂浮按钮效果 */
-        @media only screen and (min-width: 768px) { /* 屏幕宽度768px以上的样式 */
-            .form-container { max-width: 70%; } /* 表单容器最大宽度 */
-            .form-control { /* 表单控制样式 */
-                margin-bottom: 15px; /* 下外边距 */
-                display: grid; /* 网格布局 */
-                grid-template-columns: 1fr 1fr; /* 网格列模板 */
-                align-items: baseline; /* 基线对齐 */
-                justify-content: flex-end; /* 右对齐 */
-                font-family: Arial, sans-serif; /* 字体 */
+            details { border-bottom: 1px solid var(--border-color); }
+            summary {
+                font-weight: bold;
+                cursor: pointer;
+                text-align: center;
+                text-wrap: nowrap;
             }
-            #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; } /* 应用按钮显示样式 */
-            .modal-content { width: 30% } /* 模态框内容宽度 */
-            .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; } /* 路由样式 */
-        }
-    </style>
-</head>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB 中文版 ${panelVersion}</title> <!-- 网页标题 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- 引入 Font Awesome 样式 -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" /> <!-- 引入 Material Symbols 样式 -->
-    <title>可折叠部分</title> <!-- 可折叠部分标题 -->
-    <style>
-        :root {
-            --color: black; /* 文字颜色 */
-            --primary-color: #09639f; /* 主色 */
-            --secondary-color: #3498db; /* 次色 */
-            --header-color: #09639f;  /* 标题颜色 */
-            --background-color: #fff; /* 背景颜色 */
-            --form-background-color: #f9f9f9; /* 表单背景颜色 */
-            --table-active-color: #f2f2f2; /* 表格激活颜色 */
-            --hr-text-color: #3b3b3b; /* 横线文字颜色 */
-            --lable-text-color: #333; /* 标签文字颜色 */
-            --border-color: #ddd; /* 边框颜色 */
-            --button-color: #09639f; /* 按钮颜色 */
-            --input-background-color: white; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* 标题阴影 */
-        }
-        body { font-family: system-ui; background-color: var(--background-color); color: var(--color) } /* 主体样式 */
-        body.dark-mode { /* 暗黑模式样式 */
-            --color: white; /* 文字颜色 */
-            --primary-color: #09639F; /* 主色 */
-            --secondary-color: #3498DB; /* 次色 */
-            --header-color: #3498DB; /* 标题颜色 */
-            --background-color: #121212; /* 背景颜色 */
-            --form-background-color: #121212; /* 表单背景颜色 */
-            --table-active-color: #252525; /* 表格激活颜色 */
-            --hr-text-color: #D5D5D5; /* 横线文字颜色 */
-            --lable-text-color: #DFDFDF; /* 标签文字颜色 */
-            --border-color: #353535; /* 边框颜色 */
-            --button-color: #3498DB; /* 按钮颜色 */
-            --input-background-color: #252525; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25); /* 标题阴影 */
-        }
-        .material-symbols-outlined { /* 材料符号样式 */
-            margin-left: 5px;
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
-        }
-        details { border-bottom: 1px solid var(--border-color); } /* 详情边框样式 */
-        summary { /* 摘要样式 */
-            font-weight: bold; /* 加粗 */
-            cursor: pointer; /* 指针光标 */
-            text-align: center; /* 文本居中 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        summary::marker { font-size: 1.5rem; color: var(--secondary-color); } /* 摘要标记样式 */
-        summary h2 { display: inline-flex; } /* 摘要标题样式 */
-        h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); } /* 一级标题样式 */
-        h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); } /* 二级标题样式 */
-        hr { border: 1px solid var(--border-color); margin: 20px 0; } /* 水平线样式 */
-        .footer { /* 页脚样式 */
-            display: flex; /* 灵活布局 */
-            font-weight: 600; /* 字体加粗 */
-            margin: 10px auto 0 auto; /* 外边距 */
-            justify-content: center; /* 水平居中 */
-            align-items: center; /* 垂直居中 */
-        }
-        .footer button {margin: 0 20px; background: #212121; max-width: fit-content;} /* 页脚按钮样式 */
-        .footer button:hover, .footer button:focus { background: #3b3b3b;} /* 鼠标悬停和聚焦时按钮样式 */
-        .form-control a, a.link { text-decoration: none; } /* 链接样式 */
-        .form-control { /* 表单控制样式 */
-            margin-bottom: 20px; /* 下外边距 */
-            font-family: Arial, sans-serif; /* 字体设置 */
-            display: flex; /* 灵活布局 */
-            flex-direction: column; /* 纵向布局 */
-        }
-        .form-control button { /* 按钮样式 */
-            background-color: var(--form-background-color); /* 背景色 */
-            font-size: 1.1rem; /* 字体大小 */
-            font-weight: 600; /* 字体加粗 */
-            color: var(--button-color); /* 字体颜色 */
-            border-color: var(--primary-color); /* 边框颜色 */
-            border: 1px solid; /* 边框宽度 */
-        }
-        #apply {display: block; margin-top: 20px;} /* 应用按钮样式 */
-        input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;} /* 输入按钮样式 */
-        label { /* 标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 5px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="url"],
-        textarea,
-        select { /* 输入框、文本域、选择框样式 */
-            width: 100%; /* 宽度100% */
-            text-align: center; /* 文本居中 */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }	
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="url"]:focus,
-        textarea:focus,
-        select:focus { border-color: var(--secondary-color); outline: none; } /* 输入框聚焦样式 */
-        .button,
-        table button { /* 按钮样式 */
-            display: flex; /* 灵活布局 */
-            align-items: center; /* 垂直居中 */
-            justify-content: center; /* 水平居中 */
-            width: 100%; /* 宽度100% */
-            white-space: nowrap; /* 不换行 */
-            padding: 10px 15px; /* 内边距 */
-            font-size: 16px; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            letter-spacing: 1px; /* 字符间距 */
-            border: none; /* 无边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            color: white; /* 字体颜色 */
-            background-color: var(--primary-color); /* 背景颜色 */
-            cursor: pointer; /* 光标样式 */
-            outline: none; /* 无轮廓 */
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: all 0.3s ease; /* 过渡效果 */
-        }
-        input[type="checkbox"] { 
-            background-color: var(--input-background-color); /* 输入框背景颜色 */
-            style="margin: 0; grid-column: 2;" /* CSS样式 */
-        }
-        table button { margin: auto; width: auto; } /* 表格内按钮样式 */
-        .button.disabled { /* 禁用按钮样式 */
-            background-color: #ccc; /* 背景颜色 */
-            cursor: not-allowed; /* 禁用光标 */
-            box-shadow: none; /* 无阴影效果 */
-            pointer-events: none; /* 禁用指针事件 */
-        }
-        .button:hover,
-        table button:hover,
-        table button:focus { /* 鼠标悬停和聚焦时的样式 */
-            background-color: #2980b9; /* 背景颜色 */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* 阴影效果 */
-            transform: translateY(-2px); /* 垂直向上偏移 */
-        }
-        button.button:hover { color: white; } /* 鼠标悬停时按钮字体颜色 */
-        .button:active,
-        table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); } /* 按钮按下时效果 */
-        .form-container { /* 表单容器样式 */
-            max-width: 90%; /* 最大宽度90% */
-            margin: 0 auto; /* 垂直居中 */
-            padding: 20px; /* 内边距 */
-            background: var(--form-background-color); /* 背景颜色 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            margin-bottom: 100px; /* 下外边距 */
-        }
-        .table-container { margin-top: 20px; overflow-x: auto; } /* 表格容器样式 */
-        table { 
-            width: 100%; /* 宽度100% */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-collapse: separate; /* 边框分离 */
-            border-spacing: 0; /* 边框间距为0 */
-            border-radius: 10px; /* 边角圆滑 */
-            margin-bottom: 20px; /* 下外边距 */
-            overflow: hidden; /* 隐藏溢出部分 */
-        }
-        th, td { padding: 10px; border-bottom: 1px solid var(--border-color); } /* 单元格样式 */
-        td div { display: flex; align-items: center; } /* 单元格内元素样式 */
-        th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;} /* 表头样式 */
-        td:last-child { background-color: var(--table-active-color); } /* 最后一列单元格 */
-        tr:hover { background-color: var(--table-active-color); } /* 行悬停样式 */
-        .modal { /* 模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .modal-content { /* 模态框内容样式 */
-            background-color: var(--form-background-color); /* 背景颜色 */
-            margin: auto; /* 边距自动处理 */
-            padding: 10px 20px 20px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            width: 80%; /* 宽度80% */
-            position: absolute; /* 绝对定位 */
-            top: 50%; /* 上边距50% */
-            left: 50%; /* 左边距50% */
-            transform: translate(-50%, -50%); /* 居中显示 */
-        }
-        .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; } /* 关闭按钮样式 */
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; } /* 鼠标悬停及聚焦时关闭按钮样式 */
-        .form-control label { /* 表单标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 8px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            line-height: 1.3em; /* 行高 */
-        }
-        .form-control input[type="password"] { /* 密码输入框样式 */
-            width: 100%; /* 宽度100% */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            margin-bottom: 15px; /* 下外边距 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }
-        .routing { /* 路由样式 */
-            display: grid; /* 网格布局 */
-            justify-content: flex-start; /* 左对齐 */
-            grid-template-columns: 1fr 1fr 10fr 1fr; /* 网格列模板 */
-            margin-bottom: 15px; /* 下外边距 */
-        }
-        .form-control .routing input { grid-column: 2 / 3; } /* 路由输入框列样式 */
-        #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; } /* 路由规则表单样式 */
-        .routing label { /* 路由标签样式 */
-            text-align: left; /* 左对齐 */
-            margin: 0 0 0 10px; /* 边距 */
-            font-weight: 400; /* 字体强度 */
-            font-size: 100%; /* 字体大小 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; } /* 密码框聚焦样式 */
-        #passwordError { color: red; margin-bottom: 10px; } /* 密码错误提示样式 */
-        .symbol { margin-right: 8px; } /* 符号样式 */
-        .modalQR { /* 二维码模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .floating-button { /* 漂浮按钮样式 */
-            position: fixed; /* 固定定位 */
-            bottom: 20px; /* 下边距 */
-            left: 20px; /* 左边距 */
-            background-color: var(--color); /* 背景颜色 */
-            color: white; /* 字体颜色 */
-            border: none; /* 无边框 */
-            border-radius: 50%; /* 圆形边框 */
-            width: 60px; /* 宽度 */
-            height: 60px; /* 高度 */
-            font-size: 24px; /* 字体大小 */
-            cursor: pointer; /* 光标样式 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: background-color 0.3s, transform 0.3s; /* 背景颜色和变化的过渡效果 */
-        }
-        .floating-button:hover { transform: scale(1.1); } /* 鼠标悬停时扩大效果 */
-        .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; } /* 最小最大范围样式 */
-        .min-max span { text-align: center; white-space: pre; } /* 最小最大范围文本样式 */
-        .input-with-select { width: 100%; } /* 输入与选择的组合样式 */
-        body.dark-mode .floating-button { background-color: var(--color); } /* 暗黑模式下的漂浮按钮背景颜色 */
-        body.dark-mode .floating-button:hover { transform: scale(1.1); } /* 暗黑模式下悬停的漂浮按钮效果 */
-        @media only screen and (min-width: 768px) { /* 屏幕宽度768px以上的样式 */
-            .form-container { max-width: 70%; } /* 表单容器最大宽度 */
-            .form-control { /* 表单控制样式 */
-                margin-bottom: 15px; /* 下外边距 */
-                display: grid; /* 网格布局 */
-                grid-template-columns: 1fr 1fr; /* 网格列模板 */
-                align-items: baseline; /* 基线对齐 */
-                justify-content: flex-end; /* 右对齐 */
-                font-family: Arial, sans-serif; /* 字体 */
+            summary::marker { font-size: 1.5rem; color: var(--secondary-color); }
+            summary h2 { display: inline-flex; }
+            h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
+            h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
+            hr { border: 1px solid var(--border-color); margin: 20px 0; }
+            .footer {
+                display: flex;
+                font-weight: 600;
+                margin: 10px auto 0 auto;
+                justify-content: center;
+                align-items: center;
             }
-            #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; } /* 应用按钮样式 */
-            .modal-content { width: 30% } /* 模态框内容宽度 */
-            .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; } /* 路由样式 */
-        }
-    </style>
-</head>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB 中文版 ${panelVersion}</title> <!-- 网页标题 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- 引入 Font Awesome 样式 -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" /> <!-- 引入 Material Symbols 样式 -->
-    <title>可折叠部分</title> <!-- 可折叠部分标题 -->
-    <style>
-        :root {
-            --color: black; /* 文字颜色 */
-            --primary-color: #09639f; /* 主色 */
-            --secondary-color: #3498db; /* 次色 */
-            --header-color: #09639f;  /* 标题颜色 */
-            --background-color: #fff; /* 背景颜色 */
-            --form-background-color: #f9f9f9; /* 表单背景颜色 */
-            --table-active-color: #f2f2f2; /* 表格激活颜色 */
-            --hr-text-color: #3b3b3b; /* 横线文字颜色 */
-            --lable-text-color: #333; /* 标签文字颜色 */
-            --border-color: #ddd; /* 边框颜色 */
-            --button-color: #09639f; /* 按钮颜色 */
-            --input-background-color: white; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* 标题阴影 */
-        }
-        body { font-family: system-ui; background-color: var(--background-color); color: var(--color) } /* 主体样式 */
-        body.dark-mode { /* 暗黑模式样式 */
-            --color: white; /* 文字颜色 */
-            --primary-color: #09639F; /* 主色 */
-            --secondary-color: #3498DB; /* 次色 */
-            --header-color: #3498DB; /* 标题颜色 */
-            --background-color: #121212; /* 背景颜色 */
-            --form-background-color: #121212; /* 表单背景颜色 */
-            --table-active-color: #252525; /* 表格激活颜色 */
-            --hr-text-color: #D5D5D5; /* 横线文字颜色 */
-            --lable-text-color: #DFDFDF; /* 标签文字颜色 */
-            --border-color: #353535; /* 边框颜色 */
-            --button-color: #3498DB; /* 按钮颜色 */
-            --input-background-color: #252525; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25); /* 标题阴影 */
-        }
-        .material-symbols-outlined { /* 材料符号样式 */
-            margin-left: 5px;
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
-        }
-        details { border-bottom: 1px solid var(--border-color); } /* 详情框边框样式 */
-        summary { /* 摘要样式 */
-            font-weight: bold; /* 字体加粗 */
-            cursor: pointer; /* 指针光标 */
-            text-align: center; /* 文本居中 */
-            text-wrap: nowrap; /* 文本不换行 */
-        }
-        summary::marker { font-size: 1.5rem; color: var(--secondary-color); } /* 摘要标记样式 */
-        summary h2 { display: inline-flex; } /* 摘要标题样式 */
-        h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); } /* 一级标题样式 */
-        h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); } /* 二级标题样式 */
-        hr { border: 1px solid var(--border-color); margin: 20px 0; } /* 水平线样式 */
-        .footer { /* 页脚样式 */
-            display: flex; /* 灵活布局 */
-            font-weight: 600; /* 字体加粗 */
-            margin: 10px auto 0 auto; /* 外边距 */
-            justify-content: center; /* 水平居中 */
-            align-items: center; /* 垂直居中 */
-        }
-        .footer button {margin: 0 20px; background: #212121; max-width: fit-content;} /* 页脚按钮样式 */
-        .footer button:hover, .footer button:focus { background: #3b3b3b;} /* 鼠标悬停和聚焦时的按钮样式 */
-        .form-control a, a.link { text-decoration: none; } /* 链接样式 */
-        .form-control { /* 表单控制样式 */
-            margin-bottom: 20px; /* 下外边距 */
-            font-family: Arial, sans-serif; /* 字体设置 */
-            display: flex; /* 灵活布局 */
-            flex-direction: column; /* 纵向布局 */
-        }
-        .form-control button { /* 按钮样式 */
-            background-color: var(--form-background-color); /* 背景色 */
-            font-size: 1.1rem; /* 字体大小 */
-            font-weight: 600; /* 字体加粗 */
-            color: var(--button-color); /* 字体颜色 */
-            border-color: var(--primary-color); /* 边框颜色 */
-            border: 1px solid; /* 边框宽度 */
-        }
-        #apply {display: block; margin-top: 20px;} /* 应用按钮样式 */
-        input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;} /* 输入按钮样式 */
-        label { /* 标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 5px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="url"],
-        textarea,
-        select { /* 输入框、文本域、选择框样式 */
-            width: 100%; /* 宽度100% */
-            text-align: center; /* 文本居中 */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }	
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="url"]:focus,
-        textarea:focus,
-        select:focus { border-color: var(--secondary-color); outline: none; } /* 输入框聚焦样式 */
-        .button,
-        table button { /* 按钮样式 */
-            display: flex; /* 灵活布局 */
-            align-items: center; /* 垂直居中 */
-            justify-content: center; /* 水平居中 */
-            width: 100%; /* 宽度100% */
-            white-space: nowrap; /* 不换行 */
-            padding: 10px 15px; /* 内边距 */
-            font-size: 16px; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            letter-spacing: 1px; /* 字符间距 */
-            border: none; /* 无边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            color: white; /* 字体颜色 */
-            background-color: var(--primary-color); /* 背景颜色 */
-            cursor: pointer; /* 光标样式 */
-            outline: none; /* 无轮廓 */
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: all 0.3s ease; /* 过渡效果 */
-        }
-        input[type="checkbox"] { 
-            background-color: var(--input-background-color); /* 输入框背景颜色 */
-            style="margin: 0; grid-column: 2;" /* CSS样式 */
-        }
-        table button { margin: auto; width: auto; } /* 表格内按钮样式 */
-        .button.disabled { /* 禁用按钮样式 */
-            background-color: #ccc; /* 背景颜色 */
-            cursor: not-allowed; /* 禁用光标 */
-            box-shadow: none; /* 无阴影效果 */
-            pointer-events: none; /* 禁用指针事件 */
-        }
-        .button:hover,
-        table button:hover,
-        table button:focus { /* 鼠标悬停和聚焦时的样式 */
-            background-color: #2980b9; /* 背景颜色 */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* 阴影效果 */
-            transform: translateY(-2px); /* 垂直向上偏移 */
-        }
-        button.button:hover { color: white; } /* 鼠标悬停时按钮字体颜色 */
-        .button:active,
-        table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); } /* 按钮按下时效果 */
-        .form-container { /* 表单容器样式 */
-            max-width: 90%; /* 最大宽度90% */
-            margin: 0 auto; /* 垂直居中 */
-            padding: 20px; /* 内边距 */
-            background: var(--form-background-color); /* 背景颜色 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            margin-bottom: 100px; /* 下外边距 */
-        }
-        .table-container { margin-top: 20px; overflow-x: auto; } /* 表格容器样式 */
-        table { 
-            width: 100%; /* 宽度100% */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-collapse: separate; /* 边框分离 */
-            border-spacing: 0; /* 边框间距为0 */
-            border-radius: 10px; /* 边角圆滑 */
-            margin-bottom: 20px; /* 下外边距 */
-            overflow: hidden; /* 隐藏溢出部分 */
-        }
-        th, td { padding: 10px; border-bottom: 1px solid var(--border-color); } /* 单元格样式 */
-        td div { display: flex; align-items: center; } /* 单元格内元素样式 */
-        th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;} /* 表头样式 */
-        td:last-child { background-color: var(--table-active-color); } /* 最后一列单元格 */
-        tr:hover { background-color: var(--table-active-color); } /* 行悬停样式 */
-        .modal { /* 模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出部分自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .modal-content { /* 模态框内容样式 */
-            background-color: var(--form-background-color); /* 背景颜色 */
-            margin: auto; /* 边距自动处理 */
-            padding: 10px 20px 20px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 边角圆滑 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            width: 80%; /* 宽度80% */
-            position: absolute; /* 绝对定位 */
-            top: 50%; /* 上边距50% */
-            left: 50%; /* 左边距50% */
-            transform: translate(-50%, -50%); /* 居中显示 */
-        }
-        .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; } /* 关闭按钮样式 */
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; } /* 鼠标悬停和聚焦时关闭按钮样式 */
-        .form-control label { /* 表单标签样式 */
-            display: block; /* 块级元素 */
-            margin-bottom: 8px; /* 下外边距 */
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体强度 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            line-height: 1.3em; /* 行高 */
-        }
-        .form-control input[type="password"] { /* 密码输入框样式 */
-            width: 100%; /* 宽度100% */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 边角圆滑 */
-            font-size: 16px; /* 字体大小 */
-            color: var(--lable-text-color); /* 字体颜色 */
-            background-color: var(--input-background-color); /* 背景颜色 */
-            box-sizing: border-box; /* 盒子布局 */
-            margin-bottom: 15px; /* 下外边距 */
-            transition: border-color 0.3s ease; /* 边框颜色过渡效果 */
-        }
-        .routing { /* 路由设置样式 */
-            display: grid; /* 网格布局 */
-            justify-content: flex-start; /* 左对齐 */
-            grid-template-columns: 1fr 1fr 10fr 1fr; /* 网格列模板 */
-            margin-bottom: 15px; /* 下外边距 */
-        }
-        .form-control .routing input { grid-column: 2 / 3; } /* 路由输入框样式 */
-        #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; } /* 路由规则样式 */
-        .routing label { /* 路由标签样式 */
-            text-align: left; /* 左对齐 */
-            margin: 0 0 0 10px; /* 边距 */
-            font-weight: 400; /* 字体强度 */
-            font-size: 100%; /* 字体大小 */
-            text-wrap: nowrap; /* 不换行 */
-        }
-        .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; } /* 密码输入框聚焦样式 */
-        #passwordError { color: red; margin-bottom: 10px; } /* 密码错误提示样式 */
-        .symbol { margin-right: 8px; } /* 符号样式 */
-        .modalQR { /* 二维码模态框样式 */
-            display: none; /* 默认隐藏 */
-            position: fixed; /* 固定定位 */
-            z-index: 1; /* 层级 */
-            left: 0; /* 左边距 */
-            top: 0; /* 上边距 */
-            width: 100%; /* 宽度100% */
-            height: 100%; /* 高度100% */
-            overflow: auto; /* 溢出内容自动处理 */
-            background-color: rgba(0, 0, 0, 0.4); /* 背景颜色 */
-        }
-        .floating-button { /* 漂浮按钮样式 */
-            position: fixed; /* 固定定位 */
-            bottom: 20px; /* 下边距 */
-            left: 20px; /* 左边距 */
-            background-color: var(--color); /* 背景颜色 */
-            color: white; /* 字体颜色 */
-            border: none; /* 无边框 */
-            border-radius: 50%; /* 圆形边框 */
-            width: 60px; /* 宽度 */
-            height: 60px; /* 高度 */
-            font-size: 24px; /* 字体大小 */
-            cursor: pointer; /* 光标样式 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
-            transition: background-color 0.3s, transform 0.3s; /* 背景颜色与放大的过渡效果 */
-        }
-        .floating-button:hover { transform: scale(1.1); } /* 鼠标悬停时放大效果 */
-        .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; } /* 最小最大范围样式 */
-        .min-max span { text-align: center; white-space: pre; } /* 最小最大范围文本样式 */
-        .input-with-select { width: 100%; } /* 输入与选择的组合样式 */
-        body.dark-mode .floating-button { background-color: var(--color); } /* 暗黑模式下漂浮按钮背景颜色 */
-        body.dark-mode .floating-button:hover { transform: scale(1.1); } /* 暗黑模式下悬停的漂浮按钮效果 */
-        @media only screen and (min-width: 768px) { /* 屏幕宽度768px以上的样式 */
-            .form-container { max-width: 70%; } /* 表单容器最大宽度 */
-            .form-control { /* 表单控制样式 */
-                margin-bottom: 15px; /* 下外边距 */
-                display: grid; /* 网格布局 */
-                grid-template-columns: 1fr 1fr; /* 网格列模板 */
-                align-items: baseline; /* 基线对齐 */
-                justify-content: flex-end; /* 右对齐 */
-                font-family: Arial, sans-serif; /* 字体 */
+            .footer button {margin: 0 20px; background: #212121; max-width: fit-content;}
+            .footer button:hover, .footer button:focus { background: #3b3b3b;}
+            .form-control a, a.link { text-decoration: none; }
+            .form-control {
+                margin-bottom: 20px;
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
             }
-            #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; } /* 应用按钮样式 */
-            .modal-content { width: 30% } /* 模态框内容宽度 */
-            .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; } /* 路由样式 */
-        }
-    </style>
-</head>
-
+            .form-control button {
+                background-color: var(--form-background-color);
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: var(--button-color);
+                border-color: var(--primary-color);
+                border: 1px solid;
+            }
+            #apply {display: block; margin-top: 20px;}
+            input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;}
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-size: 110%;
+                font-weight: 600;
+                color: var(--lable-text-color);
+            }
+            input[type="text"],
+            input[type="number"],
+            input[type="url"],
+            textarea,
+            select {
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+                border: 1px solid var(--border-color);
+                border-radius: 5px;
+                font-size: 16px;
+                color: var(--lable-text-color);
+                background-color: var(--input-background-color);
+                box-sizing: border-box;
+                transition: border-color 0.3s ease;
+            }	
+            input[type="text"]:focus,
+            input[type="number"]:focus,
+            input[type="url"]:focus,
+            textarea:focus,
+            select:focus { border-color: var(--secondary-color); outline: none; }
+            .button,
+            table button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                white-space: nowrap;
+                padding: 10px 15px;
+                font-size: 16px;
+                font-weight: 600;
+                letter-spacing: 1px;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                background-color: var(--primary-color);
+                cursor: pointer;
+                outline: none;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+                transition: all 0.3s ease;
+            }
+            input[type="checkbox"] { 
+                background-color: var(--input-background-color);
+                style="margin: 0; 
+                grid-column: 2;"
+            }
+            table button { margin: auto; width: auto; }
+            .button.disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+                box-shadow: none;
+                pointer-events: none;
+            }
+            .button:hover,
+            table button:hover,
+            table button:focus {
+                background-color: #2980b9;
+                box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+                transform: translateY(-2px);
+            }
+            button.button:hover { color: white; }
+            .button:active,
+            table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
+            .form-container {
+                max-width: 90%;
+                margin: 0 auto;
+                padding: 20px;
+                background: var(--form-background-color);
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                margin-bottom: 100px;
+            }
+            .table-container { margin-top: 20px; overflow-x: auto; }
+            table { 
+                width: 100%;
+                border: 1px solid var(--border-color);
+                border-collapse: separate;
+                border-spacing: 0; 
+                border-radius: 10px;
+                margin-bottom: 20px;
+                overflow: hidden;
+            }
+            th, td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+            td div { display: flex; align-items: center; }
+            th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
+            td:last-child { background-color: var(--table-active-color); }               
+            tr:hover { background-color: var(--table-active-color); }
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.4);
+            }
+            .modal-content {
+                background-color: var(--form-background-color);
+                margin: auto;
+                padding: 10px 20px 20px;
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                width: 80%;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; }
+            .close:hover,
+            .close:focus { color: black; text-decoration: none; cursor: pointer; }
+            .form-control label {
+                display: block;
+                margin-bottom: 8px;
+                font-size: 110%;
+                font-weight: 600;
+                color: var(--lable-text-color);
+                line-height: 1.3em;
+            }
+            .form-control input[type="password"] {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid var(--border-color);
+                border-radius: 5px;
+                font-size: 16px;
+                color: var(--lable-text-color);
+                background-color: var(--input-background-color);
+                box-sizing: border-box;
+                margin-bottom: 15px;
+                transition: border-color 0.3s ease;
+            }
+            .routing { 
+                display: grid;
+                justify-content: flex-start;
+                grid-template-columns: 1fr 1fr 10fr 1fr;
+                margin-bottom: 15px;
+            }
+            .form-control .routing input { grid-column: 2 / 3; }
+            #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; }
+            .routing label {
+                text-align: left;
+                margin: 0 0 0 10px;
+                font-weight: 400;
+                font-size: 100%;
+                text-wrap: nowrap;
+            }
+            .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; }
+            #passwordError { color: red; margin-bottom: 10px; }
+            .symbol { margin-right: 8px; }
+            .modalQR {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.4);
+            }
+            .floating-button {
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background-color: var(--color);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+                cursor: pointer;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                transition: background-color 0.3s, transform 0.3s;
+            }
+            .floating-button:hover { transform: scale(1.1); }
+            .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; }
+            .min-max span { text-align: center; white-space: pre; }
+            .input-with-select { width: 100%; }
+            body.dark-mode .floating-button { background-color: var(--color); }
+            body.dark-mode .floating-button:hover { transform: scale(1.1); }
+            @media only screen and (min-width: 768px) {
+                .form-container { max-width: 70%; }
+                .form-control { 
+                    margin-bottom: 15px;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    align-items: baseline;
+                    justify-content: flex-end;
+                    font-family: Arial, sans-serif;
+                }
+                #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; }
+                .modal-content { width: 30% }
+                .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; }
+            }
+            body {
+              background-image: url(https://api.dujin.org/bing/1920.php);
+            }
+        </style>
+    </head>
+    <body>
+        <h1>BPB 中国版 <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
+        <div class="form-container">
+            <form id="configForm">
+                <details open>
+                    <summary><h2>VLESS / TROJAN \u2699\uFE0F</h2></summary>
+                    <div class="form-control">
+                        <label for="remoteDNS">\u{1F30F} 远程DNS</label>
+                        <input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="localDNS">\u{1F3DA}\uFE0F 私人DNS</label>
+                        <input type="text" id="localDNS" name="localDNS" value="${localDNS}"
+                            pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
+                            title="请输入DNS的IP/域名地址！"  required>
+                    </div>
+                    <div class="form-control">
+                        <label for="vlessTrojanFakeDNS">\u{1F9E2} DNS污染防护</label>
+                        <div class="input-with-select">
+                            <select id="vlessTrojanFakeDNS" name="vlessTrojanFakeDNS">
+                                <option value="true" ${vlessTrojanFakeDNS ? "selected" : ""}>开启</option>
+                                <option value="false" ${!vlessTrojanFakeDNS ? "selected" : ""}>关闭</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="proxyIP">\u{1F4CD} 代理IP</label>
+                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP2}">
+                    </div>
+                    <div class="form-control">
+                        <label for="outProxy">\u2708\uFE0F Chain Proxy</label>
+                        <input type="text" id="outProxy" name="outProxy" value="${outProxy}">
+                    </div>
+                    <div class="form-control">
+                        <label for="cleanIPs">\u2728 干净IP池</label>
+                        <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
+                    </div>
+                    <div class="form-control">
+                        <label>\u{1F50E} Cloudflare IP扫描</label>
+                        <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank" style="width: 100%;">
+                            <button type="button" class="button">
+                                Scan now
+                                <span class="material-symbols-outlined">open_in_new</span>
+                            </button>
+                        </a>
+                    </div>
+                    <div class="form-control">
+                        <label for="enableIPv6">\u{1F51B} IPv6 设置</label>
+                        <div class="input-with-select">
+                            <select id="enableIPv6" name="enableIPv6">
+                                <option value="true" ${enableIPv6 ? "selected" : ""}>启用</option>
+                                <option value="false" ${!enableIPv6 ? "selected" : ""}>禁用</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="customCdnAddrs">\u{1F480} 自定义CDN地址</label>
+                        <input type="text" id="customCdnAddrs" name="customCdnAddrs" value="${customCdnAddrs.replaceAll(",", " , ")}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customCdnHost">\u{1F480} 自定义CDN主机</label> 
+                        <input type="text" id="customCdnHost" name="customCdnHost" value="${customCdnHost}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customCdnSni">\u{1F480} 自定义CDN SNI码</label>
+                        <input type="text" id="customCdnSni" name="customCdnSni" value="${customCdnSni}">
+                    </div>
+                    <div class="form-control">
+                        <label for="bestVLESSTrojanInterval">\u{1F504} Best Interval【10-90】</label>
+                        <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
+                    </div>
+                    <div class="form-control" style="padding-top: 10px;">
+                        <label>\u2699\uFE0F 协议</label>
+                        <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
+                            <div style = "display: flex; justify-content: center; align-items: center;">
+                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${vlessConfigs ? "checked" : ""}>
+                                <label for="vlessConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
+                            </div>
+                            <div style = "display: flex; justify-content: center; align-items: center;">
+                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" value="true" ${trojanConfigs ? "checked" : ""}>
+                                <label for="trojanConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="ports-block">
+                            <tr>
+                                <th style="text-wrap: nowrap; background-color: gray;">协议</th>
+                                <th style="text-wrap: nowrap; background-color: gray;">端口</th>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
+                                <td>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${httpsPortsBlock}</div>
+                                </td>    
+                            </tr>
+                            ${!httpPortsBlock ? "" : `<tr>
+                                <td style="text-align: center; font-size: larger;"><b>Non TLS</b></td>
+                                <td>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${httpPortsBlock}</div>
+                                </td>    
+                            </tr>`}        
+                        </table>
+                    </div>
+                </details>
+                <details>
+                    <summary><h2>[机翻]片段 \u2699\uFE0F</h2></summary>	
+                    <div class="form-control">
+                        <label for="fragmentLengthMin">\u{1F4D0} 长度[10-500]</label>
+                        <div class="min-max">
+                            <input type="number" id="fragmentLengthMin" name="fragmentLengthMin" value="${lengthMin}" min="10" required>
+                            <span> - </span>
+                            <input type="number" id="fragmentLengthMax" name="fragmentLengthMax" value="${lengthMax}" max="500" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="fragmentIntervalMin">\u{1F55E} 区间[1-30]</label>
+                        <div class="min-max">
+                            <input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin"
+                                value="${intervalMin}" min="1" max="30" required>
+                            <span> - </span>
+                            <input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax"
+                                value="${intervalMax}" min="1" max="30" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="fragmentPackets">\u{1F4E6} 包</label>
+                        <div class="input-with-select">
+                            <select id="fragmentPackets" name="fragmentPackets">
+                                <option value="tlshello" ${fragmentPackets === "tlshello" ? "selected" : ""}>tlshello</option>
+                                <option value="1-1" ${fragmentPackets === "1-1" ? "selected" : ""}>1-1</option>
+                                <option value="1-2" ${fragmentPackets === "1-2" ? "selected" : ""}>1-2</option>
+                                <option value="1-3" ${fragmentPackets === "1-3" ? "selected" : ""}>1-3</option>
+                                <option value="1-5" ${fragmentPackets === "1-5" ? "selected" : ""}>1-5</option>
+                            </select>
+                        </div>
+                    </div>
+                </details>
+                <details>
+                    <summary><h2>WARP 设置 \u2699\uFE0F</h2></summary>
+                    <div class="form-control">
+                        <label for="warpEndpoints">\u2728 端点</label>
+                        <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}" required>
+                    </div>
+                    <div class="form-control">
+                        <label style="line-height: 1.5;">\u{1F50E} 扫描端点</label>
+                        <button type="button" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
+                            Copy Script<span class="material-symbols-outlined">terminal</span>
+                        </button>
+                    </div>
+                    <div class="form-control">
+                        <label for="warpFakeDNS">\u{1F9E2} 防DNS污染</label>
+                        <div class="input-with-select">
+                            <select id="warpFakeDNS" name="warpFakeDNS">
+                                <option value="true" ${warpFakeDNS ? "selected" : ""}>开启</option>
+                                <option value="false" ${!warpFakeDNS ? "selected" : ""}>关闭</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="warpPlusLicense">\u2795 Warp+ 许可</label>
+                        <input type="text" id="warpPlusLicense" name="warpPlusLicense" value="${warpPlusLicense}" 
+                            pattern="^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}$" 
+                            title="Please enter a valid Warp Plus license in xxxxxxxx-xxxxxxxx-xxxxxxxx format">
+                    </div>
+                    <div class="form-control">
+                        <label>\u267B\uFE0F Warp 配置</label>
+                        <button id="refreshBtn" type="button" class="button" style="padding: 10px 0;" onclick="getWarpConfigs()">
+                            Update<span class="material-symbols-outlined">autorenew</span>
+                        </button>
+                    </div>
+                    <div class="form-control">
+                        <label for="bestWarpInterval">\u{1F504} [机翻]最佳间隔</label>
+                        <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90" value="${bestWarpInterval}">
+                    </div>
+                </details>
+                <details>
+                    <summary><h2>WARP专业版[新手勿碰] \u2699\uFE0F</h2></summary>
+                    <div class="form-control">
+                        <label for="hiddifyNoiseMode">\u{1F635}\u200D\u{1F4AB} 隐藏模式</label>
+                        <input type="text" id="hiddifyNoiseMode" name="hiddifyNoiseMode" 
+                            pattern="^(m[1-6]|h_[0-9A-Fa-f]{2}|g_([0-9A-Fa-f]{2}_){2}[0-9A-Fa-f]{2})$" 
+                            title="Enter 'm1-m6', 'h_HEX', 'g_HEX_HEX_HEX' which HEX can be between 00 to ff"
+                            value="${hiddifyNoiseMode}" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="nikaNGNoiseMode">\u{1F635}\u200D\u{1F4AB} NikeNG模式</label>
+                        <input type="text" id="nikaNGNoiseMode" name="nikaNGNoiseMode" 
+                            pattern="^(none|quic|random|[0-9A-Fa-f]+)$" 
+                            title="Enter 'none', 'quic', 'random', or any HEX string like 'ee0000000108aaaa'"
+                            value="${nikaNGNoiseMode}" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="noiseCountMin">\u{1F39A}\uFE0F 噪声计数</label>
+                        <div class="min-max">
+                            <input type="number" id="noiseCountMin" name="noiseCountMin"
+                                value="${noiseCountMin}" min="1" required>
+                            <span> - </span>
+                            <input type="number" id="noiseCountMax" name="noiseCountMax"
+                                value="${noiseCountMax}" min="1" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="noiseSizeMin">\u{1F4CF} 噪声大小</label>
+                        <div class="min-max">
+                            <input type="number" id="noiseSizeMin" name="noiseSizeMin"
+                                value="${noiseSizeMin}" min="1" required>
+                            <span> - </span>
+                            <input type="number" id="noiseSizeMax" name="noiseSizeMax"
+                                value="${noiseSizeMax}" min="1" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="noiseDelayMin">\u{1F55E} 噪声延迟</label>
+                        <div class="min-max">
+                            <input type="number" id="noiseDelayMin" name="noiseDelayMin"
+                                value="${noiseDelayMin}" min="1" required>
+                            <span> - </span>
+                            <input type="number" id="noiseDelayMax" name="noiseDelayMax"
+                                value="${noiseDelayMax}" min="1" required>
+                        </div>
+                    </div>
+                </details>
+                <details>
+                    <summary><h2>路由规则 \u2699\uFE0F</h2></summary>
+                    <div id="routing-rules" class="form-control" style="margin-bottom: 20px;">			
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-lan" name="bypass-lan" value="true" ${bypassLAN ? "checked" : ""}>
+                            <label for="bypass-lan">Bypass LAN</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="block-ads" name="block-ads" value="true" ${blockAds ? "checked" : ""}>
+                            <label for="block-ads">阻拦广告</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-iran" name="bypass-iran" value="true" ${bypassIran ? "checked" : ""}>
+                            <label for="bypass-iran">阻拦Iran</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="block-porn" name="block-porn" value="true" ${blockPorn ? "checked" : ""}>
+                            <label for="block-porn">阻拦色情内容</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-china" name="bypass-china" value="true" ${bypassChina ? "checked" : ""}>
+                            <label for="bypass-china">绕过中国</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="block-udp-443" name="block-udp-443" value="true" ${blockUDP443 ? "checked" : ""}>
+                            <label for="block-udp-443">禁止QUIC</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-russia" name="bypass-russia" value="true" ${bypassRussia ? "checked" : ""}>
+                            <label for="bypass-russia">绕过俄罗斯</label>
+                        </div>
+                    </div>
+                </details>
+                <div id="apply" class="form-control">
+                    <div style="grid-column: 2; width: 100%; display: inline-flex;">
+                        <input type="submit" id="applyButton" style="margin-right: 10px;" class="button disabled" value="APPLY SETTINGS \u{1F4A5}" form="configForm">
+                        <button type="button" id="resetSettings" style="background: none; margin: 0; border: none; cursor: pointer;">
+                            <i class="fa fa-refresh fa-2x fa-border" style="border-radius: .2em; border-color: var(--border-color);" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <hr>            
+            <h2>普通订阅 \u{1F517}</h2>
+            <div class="table-container">
+                <table id="normal-configs-table">
+                    <tr>
+                        <th>应用程序</th>
+                        <th>订阅</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>NikaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>MahsaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN-PRO</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Shadowrocket</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Streisand</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Hiddify</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Nekoray (Xray)</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/sub/${userID}#BPB-Normal', '普通订阅')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#BPB-Normal', false)">
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Nekobox</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Nekoray (Sing-Box)</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Karing</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#BPB-Normal', false)">
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <h2>安全订阅 \u{1F517}</h2>
+            <div class="table-container">
+                <table id="full-normal-configs-table">
+                    <tr>
+                        <th>应用程序</th>
+                        <th>订阅</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>NikaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>MahsaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN-PRO</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Streisand</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=xray#BPB-Full-Normal', '安全订阅')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=xray#BPB-Full-Normal', false)">
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Sing-box</b></span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#BPB-Full-Normal', '普通订阅')" style="margin-bottom: 8px;">
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#BPB-Full-Normal', false)">
+                                C复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Clash Meta</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Clash Verge</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>FlClash</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Stash</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=clash#BPB-Full-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=clash#BPB-Full-Normal', false)">
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <h2>片段订阅 \u26D3\uFE0F</h2>
+            <div class="table-container">
+                <table id="frag-sub-table">
+                    <tr>
+                        <th style="text-wrap: nowrap;">应用程序</th>
+                        <th style="text-wrap: nowrap;">订阅</th>
+                    </tr>
+                    <tr>
+                        <td style="text-wrap: nowrap;">
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>NikaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>MahsaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN-PRO</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Streisand</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#BPB-Fragment', '片段订阅')" style="margin-bottom: 8px;">
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB-Fragment', true)">
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-wrap: nowrap;">
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Hiddify</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/fragsub/${userID}?app=hiddify#BPB-Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}?app=hiddify#BPB-Fragment', true)">
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <h2>WARP 订阅 \u{1F517}</h2>
+            <div class="table-container">
+                <table id="normal-configs-table">
+                    <tr>
+                        <th>应用程序</th>
+                        <th>订阅</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Streisand</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=xray#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=xray#BPB-Warp', false)">
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Hiddify</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Singbox</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', false)">
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Clash Meta</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Clash Verge</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>FlClash</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Stash</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=clash#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=clash#BPB-Warp', false)">
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <h2>WARP PRO SUB \u{1F517}</h2>
+            <div class="table-container">
+                <table id="warp-pro-configs-table">
+                    <tr>
+                        <th>Application</th>
+                        <th>Subscription</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>NikaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>MahsaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN-PRO</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=nikang#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=nikang#BPB-Warp-Pro', false)">
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Hiddify</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=hiddify#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=hiddify#BPB-Warp-Pro', false)">
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id="myModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <form id="passwordChangeForm">
+                        <h2>Change Password</h2>
+                        <div class="form-control">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" name="newPassword" required>
+                            </div>
+                        <div class="form-control">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
+                        <button id="changePasswordBtn" type="submit" class="button">Change Password</button>
+                    </form>
+                </div>
+            </div>
+            <div id="myQRModal" class="modalQR">
+                <div class="modal-content" style="width: auto; text-align: center;">
+                    <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 10px;">
+                        <span id="closeQRModal" class="close" style="align-self: flex-end;">&times;</span>
+                        <span id="qrcodeTitle" style="align-self: center; font-weight: bold;"></span>
+                    </div>
+                    <div id="qrcode-container"></div>
+                </div>
+            </div>
+            <hr>
+            <div class="footer">
+                <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
+                <a class="link" href="https://github.com/Starry-Sky-World/BPB-Worker-Panel-Chinese" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
+                <button id="openModalBtn" class="button">Change Password</button>
+                <button type="button" id="logout" style="background: none; color: var(--color); margin: 0; border: none; cursor: pointer;">
+                    <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+        <button id="darkModeToggle" class="floating-button">
+            <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
+        </button>   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
     <script>
         const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
         let activePortsNo = ${ports.length};
@@ -7075,520 +6283,507 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
         const getWarpConfigs = async () => {
             const license = document.getElementById('warpPlusLicense').value;
             if (license !== warpPlusLicense) {
-                alert('\u26A0\uFE0F First APPLY SETTINGS and then update Warp configs!');
+                alert('\u26A0\uFE0F 首先应用设置，然后更新Warp配置！');
                 return false;
             }
-            const confirmReset = confirm('\u26A0\uFE0F Are you sure?');
+            const confirmReset = confirm('\u26A0\uFE0F 确定？');
             if(!confirmReset) return;
             const refreshBtn = document.getElementById('refreshBtn');
 
             try {
                 document.body.style.cursor = 'wait';
                 const refreshButtonVal = refreshBtn.innerHTML;
-                refreshBtn.innerHTML = '\u231B Loading...';
+                refreshBtn.innerHTML = '\u231B 加载中';
 
                 const response = await fetch('/update-warp', {
                     method: 'POST',
                     credentials: 'include'
                 });
 
-                document.body.style.cursor = '默认';
+                document.body.style.cursor = 'default';
                 refreshBtn.innerHTML = refreshButtonVal;
                 if (response.ok) {
-                    ${isWarpPlus} ? alert('\u2705 Warp 配置成功升级到 PLUS！ \u{1F60E}') : alert('\u2705 Warp 配置成功更新！ \u{1F60E}');
+                    ${isWarpPlus} ? alert('\u2705 WARP配置升级到PLUS成功！ \u{1F60E}') : alert('\u2705 Warp configs updated successfully! \u{1F60E}');
                 } else {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
-                    alert('\u26A0\uFE0F 发生错误，请重试！\\n\u26D4 ' + errorMessage);
+                    alert('\u26A0\uFE0F 发生了一些错误，请再试一遍！\\n\u26D4 ' + errorMessage);
                 }         
             } catch (error) {
-                console.error('错误：', error);
+                console.error('异常:', error);
             } 
         }
 
+        const handlePortChange = (event) => {
+            
+            if(event.target.checked) { 
+                activePortsNo++ 
+                defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo++;
+            } else {
+                activePortsNo--;
+                defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo--;
+            }
 
-const handlePortChange = (event) => {
-    
-    if(event.target.checked) { 
-        activePortsNo++; 
-        defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo++;
-    } else {
-        activePortsNo--;
-        defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo--;
-    }
-
-    if (activePortsNo === 0) {
-        event.preventDefault();
-        event.target.checked = !event.target.checked;
-        alert("\u26D4 至少应选择一个端口! \u{1FAE4}");
-        activePortsNo = 1;
-        defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo++;
-        return false;
-    }
-        
-    if (activeHttpsPortsNo === 0) {
-        event.preventDefault();
-        event.target.checked = !event.target.checked;
-        alert("\u26D4 至少应选择一个 TLS(https) 端口! \u{1FAE4}");
-        activeHttpsPortsNo = 1;
-        return false;
-    }
-}
-
-        
-const handleProtocolChange = (event) => {
-    
-    if(event.target.checked) { 
-        activeProtocols++; 
-    } else {
-        activeProtocols--;
-    }
-
-    if (activeProtocols === 0) {
-        event.preventDefault();
-        event.target.checked = !event.target.checked;
-        alert("\u26D4 至少应选择一个协议! \u{1FAE4}");
-        activeProtocols = 1;
-        return false;
-    }
-}
-
-
-const openQR = (url, title) => {
-    let qrcodeContainer = document.getElementById("qrcode-container");
-    let qrcodeTitle = document.getElementById("qrcodeTitle");
-    const modalQR = document.getElementById("myQRModal");
-    qrcodeTitle.textContent = title;
-    modalQR.style.display = "block";
-    let qrcodeDiv = document.createElement("div");
-    qrcodeDiv.className = "qrcode";
-    qrcodeDiv.style.padding = "2px";
-    qrcodeDiv.style.backgroundColor = "#ffffff";
-    new QRCode(qrcodeDiv, {
-        text: url,
-        width: 256,
-        height: 256,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
-    qrcodeContainer.appendChild(qrcodeDiv);
-}
-
-const copyToClipboard = (text, decode) => {
-    const textarea = document.createElement('textarea');
-    const value = decode ? decodeURIComponent(text) : text;
-    textarea.value = value;
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-    alert('\u{1F4CB} 已复制到剪贴板:\\n\\n' + value);
-}
-
-
-const applySettings = async (event, configForm) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const applyButton = document.getElementById('applyButton');
-    const getValue = (id) => parseInt(document.getElementById(id).value, 10);              
-    const lengthMin = getValue('fragmentLengthMin');
-    const lengthMax = getValue('fragmentLengthMax');
-    const intervalMin = getValue('fragmentIntervalMin');
-    const intervalMax = getValue('fragmentIntervalMax');
-    const proxyIP = document.getElementById('proxyIP').value?.trim();
-    const cleanIP = document.getElementById('cleanIPs');
-    const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split(',').filter(addr => addr !== '');
-    const customCdnHost = document.getElementById('customCdnHost').value;
-    const customCdnSni = document.getElementById('customCdnSni').value;
-    const isCustomCdn = customCdnAddrs.length > 0 || customCdnHost !== '' || customCdnSni !== '';
-    const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
-    const noiseCountMin = getValue('noiseCountMin');
-    const noiseCountMax = getValue('noiseCountMax');
-    const noiseSizeMin = getValue('noiseSizeMin');
-    const noiseSizeMax = getValue('noiseSizeMax');
-    const noiseDelayMin = getValue('noiseDelayMin');
-    const noiseDelayMax = getValue('noiseDelayMax');
-    const cleanIPs = cleanIP.value?.split(',');
-    const chainProxy = document.getElementById('outProxy').value?.trim();                    
-    const formData = new FormData(configForm);
-    const isVless = /vless:\\/\\/[^s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
-    const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
-    const hasSecurity = /security=/.test(chainProxy);
-    const securityRegex = /security=(tls|none|reality)/;
-    const validSecurityType = securityRegex.test(chainProxy);
-    let match = chainProxy.match(securityRegex);
-    const securityType = match ? match[1] : null;
-    match = chainProxy.match(/:(\\d+)\\?/);
-    const vlessPort = match ? match[1] : null;
-    const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
-    const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\$(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\$|\$(?:[a-fA-F0-9]{1,4}:){1,7}:\$|\$(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\$|\$(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\$|\$(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\$|\$(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\$|\$(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\$|\$[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\$|\$:(?::[a-fA-F0-9]{1,4}){1,7}\$|\$\$(?:::[a-fA-F0-9]{1,4}){1,7}\\])$/i;
-    const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
-    const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\$(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\$|\$(?:[a-fA-F0-9]{1,4}:){1,7}:\$|\$(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\$|\$(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\$|\$(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\$|\$(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\$|\$(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\$|\$[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\$|\$:(?::[a-fA-F0-9]{1,4}){1,7}\$|\$::(?::[a-fA-F0-9]{1,4}){0,7}\$):(?:[0-9]{1,5})$/;
-    formData.append('ports', checkedPorts);
-    configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
-    });
-
-    const invalidIPs = [...cleanIPs, proxyIP, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
-        if (value !== "") {
-            const trimmedValue = value.trim();
-            return !validIPDomain.test(trimmedValue);
-        }
-    });
-
-
-const invalidEndpoints = warpEndpoints?.filter(value => {
-    if (value !== "") {
-        const trimmedValue = value.trim();
-        return !validEndpoint.test(trimmedValue);
-    }
-});
-
-if (invalidIPs.length) {
-    alert('\u26D4 无效的 IP 或域名 \u{1FAE4}\\n\\n' + invalidIPs.map(ip => '\u26A0\uFE0F ' + ip).join('\\n'));
-    return false;
-}
-
-if (invalidEndpoints.length) {
-    alert('\u26D4 无效的端点 \u{1FAE4}\\n\\n' + invalidEndpoints.map(endpoint => '\u26A0\uFE0F ' + endpoint).join('\\n'));
-    return false;
-}
-
-if (lengthMin >= lengthMax || intervalMin > intervalMax || noiseCountMin > noiseCountMax || noiseSizeMin > noiseSizeMax || noiseDelayMin > noiseDelayMax) {
-    alert('\u26D4 最小值应小于或等于最大值! \u{1FAE4}');               
-    return false;
-}
-
-if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
-    alert('\u26D4 无效的配置! \u{1FAE4} \\n - 链式代理应为 VLESS、Socks 或 Http!\\n - VLESS 传输应为 GRPC、WS 或 TCP\\n - VLESS 安全应为 TLS、Reality 或 None\\n - socks 或 http 应为:\\n + (socks 或 http)://user:pass@host:port\\n + (socks 或 http)://host:port');               
-    return false;
-}
-
-if (isVless && securityType === 'tls' && vlessPort !== '443') {
-    alert('\u26D4 VLESS TLS 端口只能是 443 以作为代理链使用! \u{1FAE4}');               
-    return false;
-}
-
-if (isCustomCdn && !(customCdnAddrs.length > 0 && customCdnHost && customCdnSni)) {
-    alert('\u26D4 所有 "自定义" 字段应同时填写或删除! \u{1FAE4}');               
-    return false;
-}
-
-try {
-    document.body.style.cursor = 'wait';
-    const applyButtonVal = applyButton.value;
-    applyButton.value = '\u231B 加载中...';
-
-    const response = await fetch('/panel', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-    });
-
-    document.body.style.cursor = 'default';
-    applyButton.value = applyButtonVal;
-
-    if (response.ok) {
-        alert('\u2705 参数应用成功 \u{1F60E}');
-        window.location.reload(true);
-    } else {
-        const errorMessage = await response.text();
-        console.error(errorMessage, response.status);
-        alert('\u26A0\uFE0F 会话已过期! 请重新登录。');
-        window.location.href = '/login';
-    }           
-} catch (error) {
-    console.error('错误:', error);
-}
-
-
-const resetPassword = async (event) => {
-    // 阻止默认事件
-    event.preventDefault();
-    const modal = document.getElementById('myModal'); // 获取模态框元素
-    const newPasswordInput = document.getElementById('newPassword'); // 获取新密码输入框
-    const confirmPasswordInput = document.getElementById('confirmPassword'); // 获取确认密码输入框
-    const passwordError = document.getElementById('passwordError'); // 获取错误提示元素
-    const newPassword = newPasswordInput.value; // 获取新密码的值
-    const confirmPassword = confirmPasswordInput.value; // 获取确认密码的值
-
-    // 检查密码是否匹配
-    if (newPassword !== confirmPassword) {
-        passwordError.textContent = "密码不匹配";
-        return false;
-    }
-
-    // 检查新密码是否包含大写字母、数字并且长度至少为8
-    const hasCapitalLetter = /[A-Z]/.test(newPassword);
-    const hasNumber = /[0-9]/.test(newPassword);
-    const isLongEnough = newPassword.length >= 8;
-
-    if (!(hasCapitalLetter && hasNumber && isLongEnough)) {
-        passwordError.textContent = '\u26A0\uFE0F 密码必须至少包含一个大写字母，一个数字，并且至少8个字符长。';
-        return false;
-    }
+            if (activePortsNo === 0) {
+                event.preventDefault();
+                event.target.checked = !event.target.checked;
+                alert("\u26D4 At least one port should be selected! \u{1FAE4}");
+                activePortsNo = 1;
+                defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo++;
+                return false;
+            }
                 
-    try {
-        // 发送POST请求以更改密码
-        const response = await fetch('/panel/password', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: newPassword,
-            credentials: 'same-origin'
-        });
-    
-        // 检查响应状态
-        if (response.ok) {
-            modal.style.display = "none"; // 隐藏模态框
-            document.body.style.overflow = ""; // 恢复页面的滚动
-            alert("\u2705 密码更改成功! \u{1F44D}");
-            window.location.href = '/login'; // 重定向到登录页面
-        } else if (response.status === 401) {
-            const errorMessage = await response.text();
-            passwordError.textContent = '\u26A0\uFE0F ' + errorMessage; // 显示错误信息
-            console.error(errorMessage, response.status);
-            alert('\u26A0\uFE0F 会话已过期! 请重新登录。');
-            window.location.href = '/login'; // 重定向到登录页面
-        } else {
-            const errorMessage = await response.text();
-            passwordError.textContent = '\u26A0\uFE0F ' + errorMessage; // 显示错误信息
-            console.error(errorMessage, response.status);
-            return false;
+            if (activeHttpsPortsNo === 0) {
+                event.preventDefault();
+                event.target.checked = !event.target.checked;
+                alert("\u26D4 At least one TLS(https) port should be selected! \u{1FAE4}");
+                activeHttpsPortsNo = 1;
+                return false;
+            }
         }
-    } catch (error) {
-        console.error('错误:', error); // 捕获并处理错误
-    }
-}
-`;
+        
+        const handleProtocolChange = (event) => {
+            
+            if(event.target.checked) { 
+                activeProtocols++ 
+            } else {
+                activeProtocols--;
+            }
+
+            if (activeProtocols === 0) {
+                event.preventDefault();
+                event.target.checked = !event.target.checked;
+                alert("\u26D4 At least one Protocol should be selected! \u{1FAE4}");
+                activeProtocols = 1;
+                return false;
+            }
+        }
+
+        const openQR = (url, title) => {
+            let qrcodeContainer = document.getElementById("qrcode-container");
+            let qrcodeTitle = document.getElementById("qrcodeTitle");
+            const modalQR = document.getElementById("myQRModal");
+            qrcodeTitle.textContent = title;
+            modalQR.style.display = "block";
+            let qrcodeDiv = document.createElement("div");
+            qrcodeDiv.className = "qrcode";
+            qrcodeDiv.style.padding = "2px";
+            qrcodeDiv.style.backgroundColor = "#ffffff";
+            new QRCode(qrcodeDiv, {
+                text: url,
+                width: 256,
+                height: 256,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            qrcodeContainer.appendChild(qrcodeDiv);
+        }
+
+        const copyToClipboard = (text, decode) => {
+            const textarea = document.createElement('textarea');
+            const value = decode ? decodeURIComponent(text) : text;
+            textarea.value = value;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('\u{1F4CB} Copied to clipboard:\\n\\n' +  value);
+        }
+
+        const applySettings = async (event, configForm) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const applyButton = document.getElementById('applyButton');
+            const getValue = (id) => parseInt(document.getElementById(id).value, 10);              
+            const lengthMin = getValue('fragmentLengthMin');
+            const lengthMax = getValue('fragmentLengthMax');
+            const intervalMin = getValue('fragmentIntervalMin');
+            const intervalMax = getValue('fragmentIntervalMax');
+            const proxyIP = document.getElementById('proxyIP').value?.trim();
+            const cleanIP = document.getElementById('cleanIPs');
+            const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split(',').filter(addr => addr !== '');
+            const customCdnHost = document.getElementById('customCdnHost').value;
+            const customCdnSni = document.getElementById('customCdnSni').value;
+            const isCustomCdn = customCdnAddrs.length > 0 || customCdnHost !== '' || customCdnSni !== '';
+            const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
+            const noiseCountMin = getValue('noiseCountMin');
+            const noiseCountMax = getValue('noiseCountMax');
+            const noiseSizeMin = getValue('noiseSizeMin');
+            const noiseSizeMax = getValue('noiseSizeMax');
+            const noiseDelayMin = getValue('noiseDelayMin');
+            const noiseDelayMax = getValue('noiseDelayMax');
+            const cleanIPs = cleanIP.value?.split(',');
+            const chainProxy = document.getElementById('outProxy').value?.trim();                    
+            const formData = new FormData(configForm);
+            const isVless = /vless:\\/\\/[^s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
+            const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
+            const hasSecurity = /security=/.test(chainProxy);
+            const securityRegex = /security=(tls|none|reality)/;
+            const validSecurityType = securityRegex.test(chainProxy);
+            let match = chainProxy.match(securityRegex);
+            const securityType = match ? match[1] : null;
+            match = chainProxy.match(/:(\\d+)\\?/);
+            const vlessPort = match ? match[1] : null;
+            const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
+            const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[\\](?:::[a-fA-F0-9]{1,4}){1,7}\\])$/i;
+            const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
+            const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[::(?::[a-fA-F0-9]{1,4}){0,7}\\]):(?:[0-9]{1,5})$/;
+            formData.append('ports', checkedPorts);
+            configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
+            });
+
+            const invalidIPs = [...cleanIPs, proxyIP, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
+                if (value !== "") {
+                    const trimmedValue = value.trim();
+                    return !validIPDomain.test(trimmedValue);
+                }
+            });
+
+            const invalidEndpoints = warpEndpoints?.filter(value => {
+                if (value !== "") {
+                    const trimmedValue = value.trim();
+                    return !validEndpoint.test(trimmedValue);
+                }
+            });
+
+            if (invalidIPs.length) {
+                alert('\u26D4 Invalid IPs or Domains \u{1FAE4}\\n\\n' + invalidIPs.map(ip => '\u26A0\uFE0F ' + ip).join('\\n'));
+                return false;
+            }
+            
+            if (invalidEndpoints.length) {
+                alert('\u26D4 Invalid endpoint \u{1FAE4}\\n\\n' + invalidEndpoints.map(endpoint => '\u26A0\uFE0F ' + endpoint).join('\\n'));
+                return false;
+            }
+
+            if (lengthMin >= lengthMax || intervalMin > intervalMax || noiseCountMin > noiseCountMax || noiseSizeMin > noiseSizeMax || noiseDelayMin > noiseDelayMax) {
+                alert('\u26D4 Minimum should be smaller or equal to Maximum! \u{1FAE4}');               
+                return false;
+            }
+
+            if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
+                alert('\u26D4 Invalid Config! \u{1FAE4} \\n - The chain proxy should be VLESS, Socks or Http!\\n - VLESS transmission should be GRPC,WS or TCP\\n - VLESS security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
+                return false;
+            }
+
+            if (isVless && securityType === 'tls' && vlessPort !== '443') {
+                alert('\u26D4 VLESS TLS port can be only 443 to be used as a proxy chain! \u{1FAE4}');               
+                return false;
+            }
+
+            if (isCustomCdn && !(customCdnAddrs.length > 0 && customCdnHost && customCdnSni)) {
+                alert('\u26D4 All "Custom" fields should be filled or deleted together! \u{1FAE4}');               
+                return false;
+            }
+
+            try {
+                document.body.style.cursor = 'wait';
+                const applyButtonVal = applyButton.value;
+                applyButton.value = '\u231B Loading...';
+
+                const response = await fetch('/panel', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                document.body.style.cursor = 'default';
+                applyButton.value = applyButtonVal;
+
+                if (response.ok) {
+                    alert('\u2705 Parameters applied successfully \u{1F60E}');
+                    window.location.reload(true);
+                } else {
+                    const errorMessage = await response.text();
+                    console.error(errorMessage, response.status);
+                    alert('\u26A0\uFE0F Session expired! Please login again.');
+                    window.location.href = '/login';
+                }           
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        const logout = async (event) => {
+            event.preventDefault();
+
+            try {
+                const response = await fetch('/logout', {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+            
+                if (response.ok) {
+                    window.location.href = '/login';
+                } else {
+                    console.error('Failed to log out:', response.status);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        const resetPassword = async (event) => {
+            event.preventDefault();
+            const modal = document.getElementById('myModal');
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const passwordError = document.getElementById('passwordError');             
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (newPassword !== confirmPassword) {
+                passwordError.textContent = "Passwords do not match";
+                return false;
+            }
+
+            const hasCapitalLetter = /[A-Z]/.test(newPassword);
+            const hasNumber = /[0-9]/.test(newPassword);
+            const isLongEnough = newPassword.length >= 8;
+
+            if (!(hasCapitalLetter && hasNumber && isLongEnough)) {
+                passwordError.textContent = '\u26A0\uFE0F Password must contain at least one capital letter, one number, and be at least 8 characters long.';
+                return false;
+            }
+                    
+            try {
+                const response = await fetch('/panel/password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: newPassword,
+                    credentials: 'same-origin'
+                });
+            
+                if (response.ok) {
+                    modal.style.display = "none";
+                    document.body.style.overflow = "";
+                    alert("\u2705 Password changed successfully! \u{1F44D}");
+                    window.location.href = '/login';
+                } else if (response.status === 401) {
+                    const errorMessage = await response.text();
+                    passwordError.textContent = '\u26A0\uFE0F ' + errorMessage;
+                    console.error(errorMessage, response.status);
+                    alert('\u26A0\uFE0F Session expired! Please login again.');
+                    window.location.href = '/login';
+                } else {
+                    const errorMessage = await response.text();
+                    passwordError.textContent = '\u26A0\uFE0F ' + errorMessage;
+                    console.error(errorMessage, response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    <\/script>
+    </body>	
+    </html>`;
     return html;
 }
 function renderLoginPage() {
     return `
     <!DOCTYPE html>
-<html lang="en">
-<head>
+    <html lang="en">
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户登录</title>
     <style>
         :root {
             --color: black;
-            --primary-color: #09639f; /* 主颜色 */
-            --header-color: #09639f; /* 头部颜色 */
-            --background-color: #fff; /* 背景颜色 */
-            --form-background-color: #f9f9f9; /* 表单背景颜色 */
-            --lable-text-color: #333; /* 标签文本颜色 */
-            --h2-color: #3b3b3b; /* 二级标题颜色 */
-            --border-color: #ddd; /* 边框颜色 */
-            --input-background-color: white; /* 输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* 头部阴影效果 */
+            --primary-color: #09639f;
+            --header-color: #09639f; 
+            --background-color: #fff;
+            --form-background-color: #f9f9f9;
+            --lable-text-color: #333;
+            --h2-color: #3b3b3b;
+            --border-color: #ddd;
+            --input-background-color: white;
+            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
         }
-        html, body { height: 100%; margin: 0; } /* 设置页面高度与边距 */
+        html, body { height: 100%; margin: 0; }
         body {
-            font-family: system-ui; /* 字体 */
-            background-color: var(--background-color); /* 背景颜色 */
+            font-family: system-ui;
+            background-color: var(--background-color);
             position: relative;
-            overflow: hidden; /* 隐藏溢出的内容 */
+            overflow: hidden;
         }
         body.dark-mode {
-            --color: white; /* 深色模式文本颜色 */
-            --primary-color: #09639F; /* 深色模式主颜色 */
-            --header-color: #3498DB; /* 深色模式头部颜色 */
-            --background-color: #121212; /* 深色模式背景颜色 */
-            --form-background-color: #121212; /* 深色模式表单背景颜色 */
-            --lable-text-color: #DFDFDF; /* 深色模式标签文本颜色 */
-            --h2-color: #D5D5D5; /* 深色模式二级标题颜色 */
-            --border-color: #353535; /* 深色模式边框颜色 */
-            --input-background-color: #252525; /* 深色模式输入框背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25); /* 深色模式头部阴影效果 */
+            --color: white;
+            --primary-color: #09639F;
+            --header-color: #3498DB; 
+            --background-color: #121212;
+            --form-background-color: #121212;
+            --lable-text-color: #DFDFDF;
+            --h2-color: #D5D5D5;
+            --border-color: #353535;
+            --input-background-color: #252525;
+            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
         }
+        html, body { height: 100%; margin: 0; }
         .container {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* 居中容器 */
-            width: 90%; /* 宽度 */
+            transform: translate(-50%, -50%);
+            width: 90%;
         }
-        h1 { 
-            font-size: 2.5rem; /* 标题大小 */
-            text-align: center; /* 居中对齐 */
-            color: var(--header-color); /* 标题颜色 */
-            margin: 0 auto 30px; /* 边距 */
-            text-shadow: var(--header-shadow); /* 标题阴影效果 */
-        }        
-        h2 { 
-            text-align: center; 
-            color: var(--h2-color); /* 二级标题颜色 */
-        }
+        h1 { font-size: 2.5rem; text-align: center; color: var(--header-color); margin: 0 auto 30px; text-shadow: var(--header-shadow); }        
+        h2 { text-align: center; color: var(--h2-color) }
         .form-container {
-            background: var(--form-background-color); /* 表单背景颜色 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 10px; /* 圆角 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-            padding: 20px; /* 内边距 */
+            background: var(--form-background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
-        .form-control { 
-            margin-bottom: 15px; 
-            display: flex; 
-            align-items: center; /* 垂直居中对齐 */
-        }
+        .form-control { margin-bottom: 15px; display: flex; align-items: center; }
         label {
             display: block;
             margin-bottom: 5px;
             padding-right: 20px;
-            font-size: 110%; /* 字体大小 */
-            font-weight: 600; /* 字体加粗 */
-            color: var(--lable-text-color); /* 标签文本颜色 */
+            font-size: 110%;
+            font-weight: 600;
+            color: var(--lable-text-color);
         }
         input[type="text"],
         input[type="password"] {
-            width: 100%; /* 输入框宽度 */
-            padding: 10px; /* 内边距 */
-            border: 1px solid var(--border-color); /* 边框 */
-            border-radius: 5px; /* 圆角 */
-            color: var(--lable-text-color); /* 输入文本颜色 */
-            background-color: var(--input-background-color); /* 输入框背景颜色 */
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--lable-text-color);
+            background-color: var(--input-background-color);
         }
         button {
             display: block;
-            width: 100%; /* 按钮宽度 */
-            padding: 10px; /* 内边距 */
-            font-size: 16px; /* 字体大小 */
-            font-weight: 600; /* 字体加粗 */
-            border: none; /* 无边框 */
-            border-radius: 5px; /* 圆角 */
-            color: white; /* 文字颜色 */
-            background-color: var(--primary-color); /* 按钮背景颜色 */
-            cursor: pointer; /* 鼠标样式 */
-            transition: background-color 0.3s ease; /* 背景颜色过渡效果 */
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            background-color: var(--primary-color);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         .button:hover,
         button:focus {
-            background-color: #2980b9; /* 悬停时背景颜色 */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* 悬停时阴影效果 */
-            transform: translateY(-2px); /* 悬停时上移 */
+            background-color: #2980b9;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
         }
-        button.button:hover { color: white; } /* 悬停时按钮文字颜色 */
-        .button:active { 
-            transform: translateY(1px); /* 点击时下移 */
-            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); /* 点击时阴影效果 */
-        }
+        button.button:hover { color: white; }
+        .button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
         @media only screen and (min-width: 768px) {
-            .container { width: 30%; } /* 屏幕宽度大于768px时容器宽度 */
+            .container { width: 30%; }
+        }
+        body {
+          background-image: url('https://api.dujin.org/bing/1920.php');
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>BPB 面板 <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
-        <div class="form-container">
-            <h2>用户登录</h2>
-            <form id="loginForm">
-                <div class="form-control">
-                    <label for="password">密码</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <div id="passwordError" style="color: red; margin-bottom: 10px;"></div> <!-- 显示错误信息 -->
-                <button type="submit" class="button">登录</button>
-            </form>
+    </head>
+    <body>
+        <div class="container">
+            <h1>BPB 中国版 <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
+            <div class="form-container">
+                <h2>用户登录</h2>
+                <form id="loginForm">
+                    <div class="form-control">
+                        <label for="password">密码</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
+                    <button type="submit" class="button">登录</button>
+                </form>
+            </div>
         </div>
-    </div>
-<script>
-    // 检查本地存储的深色模式设置
-    localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-    document.getElementById('loginForm').addEventListener('submit', async (event) => {
-        // 阻止默认表单提交
-        event.preventDefault();
-        const password = document.getElementById('password').value; // 获取密码输入值
+    <script>
+        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
 
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain'
-                },
-                body: password // 发送密码
-            });
-        
-            // 检查响应状态
-            if (response.ok) {
-                window.location.href = '/panel'; // 登录成功，重定向到面板
-            } else {
-                passwordError.textContent = '\u26A0\uFE0F 密码错误！'; // 显示错误信息
-                const errorMessage = await response.text();
-                console.error('登录失败:', errorMessage); // 打印错误信息
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: password
+                });
+            
+                if (response.ok) {
+                    window.location.href = '/panel';
+                } else {
+                    passwordError.textContent = '\u26A0\uFE0F 错误的密码！';
+                    const errorMessage = await response.text();
+                    console.error('登录失败：', errorMessage);
+                }
+            } catch (error) {
+                console.error('登录时出错：', error);
             }
-        } catch (error) {
-            console.error('登录过程中出错:', error); // 捕获并打印错误
-        }
-    });
-</script>
-</body>
-</html>
-`;
+        });
+    <\/script>
+    </body>
+    </html>`;
 }
 function renderErrorPage(message2, error, refer) {
     return `
     <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>错误页面</title>
-    <style>
-        :root {
-            --color: black; /* 文本颜色 */
-            --header-color: #09639f; /* 头部颜色 */
-            --background-color: #fff; /* 背景颜色 */
-            --border-color: #ddd; /* 边框颜色 */
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); /* 头部阴影效果 */
-        }
-        body, html {
-            height: 100%; /* 设置高度为100% */
-            width: 100%; /* 设置宽度为100% */
-            margin: 0; /* 去掉默认边距 */
-            display: flex; /* 使用弹性布局 */
-            justify-content: center; /* 水平居中对齐 */
-            align-items: center; /* 垂直居中对齐 */
-            font-family: system-ui; /* 字体 */
-            color: var(--color); /* 文本颜色 */
-            background-color: var(--background-color); /* 背景颜色 */
-        }
-        body.dark-mode {
-            --color: white; /* 深色模式文本颜色 */
-            --header-color: #3498DB; /* 深色模式头部颜色 */
-            --background-color: #121212; /* 深色模式背景颜色 */
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25); /* 深色模式头部阴影效果 */
-        }
-        h1 { 
-            font-size: 2.5rem; /* 标题大小 */
-            text-align: center; /* 标题居中对齐 */
-            color: var(--header-color); /* 标题颜色 */
-            text-shadow: var(--header-shadow); /* 标题阴影效果 */
-        }
-        #error-container { 
-            text-align: center; /* 错误容器文本居中对齐 */
-        }
-    </style>
-</head>
-<body>
-    <div id="error-container">
-        <h1>BPB 面板 <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
-        <div id="error-message">
-            <h2>${message2} ${refer ? '请再试一次，或参考 <a href="https://github.com/Starry-Sky-World/BPB-Worker-Panel-Chinese/blob/main/README_zh.md">文档</a>' : ""}</h2>
-            <p><b>${error ? `\u26A0\uFE0F ${error.stack.toString()}` : ""}</b></p> <!-- 显示错误信息及堆栈 -->
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>错误</title>
+        <style>
+            :root {
+                --color: black;
+                --header-color: #09639f; 
+                --background-color: #fff;
+                --border-color: #ddd;
+                --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+            }
+            body, html {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-family: system-ui;
+                color: var(--color);
+                background-color: var(--background-color);
+            }
+            body.dark-mode {
+                --color: white;
+                --header-color: #3498DB; 
+                --background-color: #121212;
+                --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);          
+            }
+            h1 { font-size: 2.5rem; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
+            #error-container { text-align: center; }
+        </style>
+    </head>
+    <body>
+        <div id="error-container">
+            <h1>BPB 中国版 <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
+            <div id="error-message">
+                <h2>${message2} ${refer ? '请重试或者查看 <a href="https://github.com/Starry-Sky-World/BPB-Worker-Panel-Chinese/blob/main/README.md">文档（非中文）</a>' : ""}
+                </h2>
+                <p><b>${error ? `\u26A0\uFE0F ${error.stack.toString()}` : ""}</b></p>
+            </div>
         </div>
-    </div>
-<script>
-    // 检查本地存储的深色模式设置
-    localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-</script>
-</body>
-</html>
-`;
+    <script>
+        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
+    <\/script>
+    </body>
+    </html>`;
 }
 function extractChainProxyParams(chainProxy) {
     let configParams = {};
