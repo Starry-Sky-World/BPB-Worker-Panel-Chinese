@@ -2,6 +2,7 @@
 BPB Panel 中文版
 
 ### 🌏 Readme in [Farsi](README_fa.md) [简体中文](README_zh.md)
+This Projects By **GPL-v3 LICENSE**
 
 ![image](https://github.com/user-attachments/assets/5805676e-a826-40a0-849a-9b1996a66030)
 ![image](https://github.com/user-attachments/assets/cb0b02ae-f058-4173-b778-f1c97d209266)
