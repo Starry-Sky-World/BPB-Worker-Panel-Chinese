@@ -64,7 +64,7 @@
 ---
 
 ## 关注者随时间变化
-[![关注者随时间变化](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
+[![关注者随时间变化](https://starchart.cc/Starry-Sky-World/BPB-Worker-Panel-Chinese/)](https://starchart.cc/Starry-Sky-World/BPB-Worker-Panel-Chinese/)
 
 ---
 
